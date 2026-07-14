@@ -10,8 +10,9 @@ Feature 2 (Intelligence Layer) and PDF branding polish are out of scope for this
 
 - **Framework:** Next.js (App Router, TypeScript), single deployable app on Vercel.
 - **Styling:** Tailwind CSS.
-- **AI:** Anthropic Claude API (`claude-sonnet-4-6`), called server-side only — API key lives in `.env.local` / Vercel env vars, never exposed to the client.
-- **Web search:** Claude's built-in web search tool (server tool use), no separate search API/key.
+- **AI:** Google Gemini API (`gemini-2.5-flash`), called server-side only — API key (`GEMINI_API_KEY`) lives in `.env.local` / Vercel env vars, never exposed to the client.
+- **Web search:** Gemini's built-in Google Search grounding tool, no separate search API/key.
+  - Note: Gemini cannot combine Search grounding with forced JSON schema output in a single call. The research call uses Search grounding and returns free text + grounding sources; a second, tool-free call with `responseSchema` structures that text into the report JSON (see Data Flow).
 - **PDF export:** Client-side rendering of the report to PDF (react-pdf or jsPDF + html2canvas), triggered by a "Download PDF" button.
 - **No database, no auth.** Stateless — one request in, one report out.
 
@@ -19,11 +20,10 @@ Feature 2 (Intelligence Layer) and PDF branding polish are out of scope for this
 
 1. User fills out a form: idea name, description, industry (dropdown), target market.
 2. Form submits to `POST /api/research`.
-3. API route builds a prompt and calls Claude with:
-   - Web search tool enabled (for live competitor/market data).
-   - A forced tool call defining the report JSON schema (structured output, not free-text parsing).
-4. Claude researches and returns the structured report JSON.
-5. API route validates the shape, returns it to the client.
+3. API route calls Gemini twice:
+   - **Research call:** `gemini-2.5-flash` with Google Search grounding enabled, prompted to research the idea (market size, competitors, revenue potential) and cite sources. Returns free text + grounding metadata (source URLs).
+   - **Structuring call:** `gemini-2.5-flash` (no tools), given the research text and a `responseSchema` matching the report shape, forced to return well-formed JSON matching the schema.
+4. API route merges the structured JSON with the grounding sources from step 3, validates the shape, returns it to the client.
 6. Client renders the report in styled cards; user can click "Download PDF" to export the same content.
 
 ## Report Schema
@@ -57,12 +57,12 @@ type MarketResearchReport = {
 };
 ```
 
-Enforced via Claude tool-use with a forced tool call (`tool_choice`) against this JSON schema, so the response is always well-formed — no regex/markdown scraping of free text.
+Enforced via Gemini's `responseSchema` + `responseMimeType: "application/json"` on the structuring call, so the response is always well-formed — no regex/markdown scraping of free text. The `sources` field is populated from the research call's grounding metadata, not invented by the structuring call.
 
 ## UI
 
 - Single page (`/`).
-- **Form** at top: idea name (text), description (textarea), industry (dropdown), target market (text). Submit button shows a loading state while the request is in flight (web search calls can take 15–30s).
+- **Form** at top: idea name (text), description (textarea), industry (dropdown), target market (text). Submit button shows a loading state while the request is in flight (two sequential Gemini calls, search grounding included, can take 15–30s).
 - **Report** renders below the form once returned:
   - Verdict badge at the top, color-coded (green/amber/red) with reasoning.
   - Overview section.
@@ -76,7 +76,7 @@ Enforced via Claude tool-use with a forced tool call (`tool_choice`) against thi
 
 ## Error Handling
 
-- If the Claude API call fails (network, rate limit, malformed response), show an inline error message with a "Retry" action. No silent failures, no partial/garbled report rendering.
+- If either Gemini API call fails (network, rate limit, malformed response), show an inline error message with a "Retry" action. No silent failures, no partial/garbled report rendering.
 - Basic form validation (required fields) before submission.
 
 ## Testing
