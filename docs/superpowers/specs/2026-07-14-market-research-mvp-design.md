@@ -17,16 +17,16 @@ Ship the Market Research Simulator: voice-assisted idea intake feeding a multi-s
 
 ## Voice Intake Sub-feature
 
-Turn-based, not full-duplex. No text-to-speech (question is rendered as text). No live streaming, no barge-in handling.
+Turn-based, not full-duplex. Fully spoken: the question is read aloud via browser TTS (Web Speech API `speechSynthesis`) as well as shown as text, and the user answers by voice. No live streaming, no barge-in handling. This brings TTS into MVP scope ahead of the PRD's original v2 deferral (Section 10) — browser-native TTS was chosen specifically because it adds no extra service, API key, or latency per question, keeping the interactive-call feel without the infrastructure cost of a cloud TTS API.
 
-1. **Question** — Gemini Flash generates the next question adaptively from current `research_state`, skipping topics already answered implicitly. Rendered as text.
-2. **Record** — browser records one spoken answer as an audio blob.
+1. **Question** — Gemini Flash generates the next question adaptively from current `research_state`, skipping topics already answered implicitly. Rendered as text AND spoken aloud via `speechSynthesis`.
+2. **Record** — once TTS playback finishes, the browser starts recording the spoken answer as an audio blob.
 3. **Transcribe** — blob POSTs to the Whisper microservice's `/transcribe` endpoint, returns text.
 4. **Update state** — transcript appended to `research_state`.
 5. **Repeat** steps 1–4.
 6. **Exit** — loop ends after 5–8 exchanges (~5–8 minutes total), not a fixed-duration call. The compiled transcript becomes the structured brief that seeds the research pipeline.
 
-This replaces the PRD's cut "30-minute structured interview" concept (deferred to v2) with a lighter, adaptive intake.
+This replaces the PRD's cut "30-minute structured interview" concept (deferred to v2) with a lighter, adaptive, fully-spoken intake call.
 
 ## Agentic Pipeline
 
@@ -50,7 +50,7 @@ Sequential, not one large prompt. A shared `research_state` JSON object is built
 
 - Full 30-minute structured interview with topic-coverage tracking — deferred to v2.
 - Performance metrics with periodic/longitudinal targets — deferred to v2. Not included even as a static one-shot projection, since the PRD explicitly rejects presenting an untracked number as if it were a tracked target.
-- Text-to-speech for the voice layer.
+- Cloud/high-fidelity TTS (e.g. Gemini or a dedicated TTS API) — browser-native TTS is in scope (see Voice Intake Sub-feature); a higher-quality voice is deferred.
 - The Intelligence Layer (Feature 2) — separate spec, Days 6–9.
 - Accounts, persistence, payment.
 
@@ -107,7 +107,7 @@ Each stage's structuring call is schema-forced (`responseSchema` + `responseMime
 ## UI
 
 - **Step 1 — Idea form:** idea name, description, industry (dropdown), target market.
-- **Step 2 — Voice intake:** question-and-record loop (5–8 exchanges) as described above, with visible progress (e.g. "Question 3 of ~6").
+- **Step 2 — Voice intake:** question-and-record loop (5–8 exchanges) as described above — question is spoken aloud and shown as text, then recording starts — with visible progress (e.g. "Question 3 of ~6") and a visible state indicator (speaking / listening / transcribing).
 - **Step 3 — Pipeline running:** loading state while the multi-stage pipeline executes (can take a few minutes per PRD's non-functional target); show stage-level progress if feasible (e.g. "Researching competitors...") since the full pipeline is slower than a single call.
 - **Step 4 — Report:** rendered in styled sections matching the schema above — verdict badge (color-coded) at top, executive summary, TAM/SAM/SOM, competitors, SWOT, PMF signal (with insufficient-data claims visually distinguished, not hidden), economics, feasibility (geo section only rendered if `applicable: true`), pros/cons, sources. "Download PDF" and "New Research" buttons.
 
