@@ -6,7 +6,6 @@ import { IdeaForm } from "@/components/IdeaForm";
 import { VoiceIntake } from "@/components/VoiceIntake";
 import { TextIntake } from "@/components/TextIntake";
 import { ReportView } from "@/components/Report/ReportView";
-import { DownloadPdfButton } from "@/components/DownloadPdfButton";
 import type { IdeaFormInput, ResearchState, MarketResearchReport, VoiceExchange } from "@/lib/types";
 
 type Step = "form" | "intake-choice" | "voice" | "text" | "pipeline" | "report" | "error";
@@ -117,12 +116,7 @@ export default function Home() {
       )}
 
       {step === "report" && report && (
-        <>
-          <div className="max-w-3xl mx-auto flex justify-end mb-4">
-            <DownloadPdfButton report={report} />
-          </div>
-          <ReportView report={report} onNewResearch={handleNewResearch} />
-        </>
+        <ReportView report={report} onNewResearch={handleNewResearch} />
       )}
     </main>
   );
