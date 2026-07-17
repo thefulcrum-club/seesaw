@@ -2,7 +2,6 @@
 import { describe, it, expect } from "vitest";
 import { transcribeAudio } from "./whisperClient";
 import { readFileSync } from "fs";
-import { join } from "path";
 
 async function whisperServiceReachable(): Promise<boolean> {
   try {
