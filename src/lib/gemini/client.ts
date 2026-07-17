@@ -1,7 +1,7 @@
 // src/lib/gemini/client.ts
 import { GoogleGenAI } from "@google/genai";
 
-const MODEL = "gemini-3-flash-preview";
+const MODEL = "gemini-2.5-flash";
 
 function getClient() {
   const project = process.env.GOOGLE_CLOUD_PROJECT;
