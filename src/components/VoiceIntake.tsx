@@ -51,6 +51,9 @@ export function VoiceIntake({
           researchState: { ...researchState, voiceExchanges: exchangesSoFar },
         }),
       });
+      if (!res.ok) {
+        throw new Error(`voice-question request failed: ${res.status}`);
+      }
       const data = (await res.json()) as { question: string | null; done: boolean };
       if (data.done || !data.question) {
         onComplete(exchangesSoFar);

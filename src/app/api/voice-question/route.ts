@@ -42,14 +42,22 @@ ${transcript || "(none yet)"}
 
 Ask ONE good follow-up question that would meaningfully help a market researcher (about the problem, target user, competitive awareness, pricing intuition, or goals) — skip anything already answered. If you have gathered enough (minimum ${MIN_EXCHANGES} exchanges reached and no more good questions to ask), set done to true and question to null. Otherwise set done to false and provide the question.`;
 
-  const result = await runStructuring<{ done: boolean; question: string | null }>(
-    prompt,
-    nextQuestionSchema
-  );
+  try {
+    const result = await runStructuring<{ done: boolean; question: string | null }>(
+      prompt,
+      nextQuestionSchema
+    );
 
-  if (exchangeCount < MIN_EXCHANGES) {
-    return NextResponse.json({ ...result, done: false });
+    if (exchangeCount < MIN_EXCHANGES) {
+      return NextResponse.json({ ...result, done: false });
+    }
+
+    return NextResponse.json(result);
+  } catch (error) {
+    console.error("Next-question generation failed:", error);
+    return NextResponse.json(
+      { error: "Couldn't generate the next question. Please try again." },
+      { status: 502 }
+    );
   }
-
-  return NextResponse.json(result);
 }
