@@ -1,7 +1,7 @@
 // src/lib/whisperClient.ts
 
 export async function transcribeAudio(audioBlob: Blob): Promise<string> {
-  const url = process.env.WHISPER_SERVICE_URL ?? "http://localhost:8000";
+  const url = process.env.NEXT_PUBLIC_WHISPER_SERVICE_URL ?? "http://localhost:8000";
   const formData = new FormData();
   formData.append("audio", audioBlob, "answer.webm");
 

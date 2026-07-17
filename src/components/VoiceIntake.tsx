@@ -116,12 +116,20 @@ export function VoiceIntake({
       <p className="text-sm text-gray-500">
         Question {exchanges.length + 1} of ~6-8
       </p>
-      {phase === "loading-question" && <p>Thinking of the next question...</p>}
+      {phase === "loading-question" && !error && <p>Thinking of the next question...</p>}
       {phase === "speaking" && <p className="text-sm text-gray-500">Speaking...</p>}
       {phase !== "loading-question" && currentQuestion && (
         <p className="text-lg font-medium">{currentQuestion}</p>
       )}
       {error && <p className="text-red-600 text-sm">{error}</p>}
+      {phase === "loading-question" && error && (
+        <button
+          onClick={() => fetchNextQuestion(exchanges)}
+          className="bg-black text-white rounded px-4 py-2 font-medium"
+        >
+          Retry
+        </button>
+      )}
       {phase === "ready-to-record" && (
         <button
           onClick={startRecording}
