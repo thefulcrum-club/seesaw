@@ -10,7 +10,7 @@
 
 ## Global Constraints
 
-- AI provider is Gemini Flash-Lite (`gemini-2.5-flash-lite`) exclusively — no Claude, no other LLM. (Switched from `gemini-2.5-flash` after Task 6/7 hit the free-tier 20 req/day quota on full Flash; Flash-Lite has a higher free-tier cap. `src/lib/gemini/client.ts`'s `MODEL` constant is the single source of truth — Tasks 1-6 already merged reference it via that constant, not a literal string, so this is a one-line change already applied there.)
+- AI provider is Gemini 3 Flash Preview (`gemini-3-flash-preview`) exclusively — no Claude, no other LLM. (Model swapped twice after the plan's tasks were written, each time due to hitting a model-specific free-tier 20 req/day quota: `gemini-2.5-flash` → `gemini-2.5-flash-lite` → `gemini-3-flash-preview`. `src/lib/gemini/client.ts`'s `MODEL` constant is the single source of truth — all agent tasks reference it via that constant, not a literal string, so each swap was a one-line change there.)
 - Gemini cannot combine Search grounding and forced `responseSchema` output in one call — every research stage is two calls (grounded free-text research, then schema-forced structuring).
 - Every report claim must be traceable to a source URL or explicitly marked `"insufficient data"` with a stated reason — never estimate silently.
 - Voice intake is turn-based text-question / spoken-answer, no TTS, 5–8 exchanges, ends adaptively (not fixed duration).
@@ -347,7 +347,7 @@ Add to `package.json` scripts: `"test": "vitest run"`.
 // src/lib/gemini/client.ts
 import { GoogleGenAI } from "@google/genai";
 
-const MODEL = "gemini-2.5-flash-lite";
+const MODEL = "gemini-3-flash-preview";
 
 function getClient() {
   const apiKey = process.env.GEMINI_API_KEY;
