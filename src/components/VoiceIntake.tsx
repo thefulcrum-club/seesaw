@@ -4,6 +4,7 @@
 import { useState, useRef, useEffect } from "react";
 import type { ResearchState, VoiceExchange } from "@/lib/types";
 import { transcribeAudio } from "@/lib/whisperClient";
+import { synthesizeSpeech } from "@/lib/kokoroClient";
 
 type Phase =
   | "loading-question"
@@ -12,7 +13,7 @@ type Phase =
   | "recording"
   | "transcribing";
 
-function speak(text: string): Promise<void> {
+function speakWithBrowserTTS(text: string): Promise<void> {
   return new Promise((resolve) => {
     if (!("speechSynthesis" in window)) {
       resolve();
@@ -23,6 +24,23 @@ function speak(text: string): Promise<void> {
     utterance.onerror = () => resolve();
     window.speechSynthesis.speak(utterance);
   });
+}
+
+async function speak(text: string): Promise<void> {
+  try {
+    const blob = await synthesizeSpeech(text);
+    const objectUrl = URL.createObjectURL(blob);
+    await new Promise<void>((resolve) => {
+      const audio = new Audio(objectUrl);
+      audio.onended = () => resolve();
+      audio.onerror = () => resolve();
+      audio.play().catch(() => resolve());
+    });
+    URL.revokeObjectURL(objectUrl);
+  } catch (err) {
+    console.warn("Kokoro TTS failed, falling back to browser speech synthesis", err);
+    await speakWithBrowserTTS(text);
+  }
 }
 
 export function VoiceIntake({
