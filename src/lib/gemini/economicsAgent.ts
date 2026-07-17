@@ -27,7 +27,7 @@ ${localeInstruction(locale)}
 Based on comparable pricing in this space, propose a pricing model and estimate the implied margin. Then estimate the capital required to reach the stated SOM (e.g. for customer acquisition, product build, team). If real benchmarks aren't available for any part of this, say so explicitly rather than inventing a number.`);
 
   return runStructuring<EconomicsSection>(
-    `Structure the following economics research into pricing_model, implied_margin, and capital_target_to_som fields.
+    `Structure the following economics research into pricing_model, implied_margin, and capital_target_to_som fields. Each field must be an array of 1-3 short bullet points (max ~12 words each), not a paragraph.
 
 Research:
 ${research.text}`,

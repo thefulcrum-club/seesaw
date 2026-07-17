@@ -11,7 +11,7 @@ import type {
 } from "../types";
 
 export type SynthesisResult = {
-  executive_summary: string;
+  executive_summary: string[];
   swot: {
     strengths: string[];
     weaknesses: string[];
@@ -32,6 +32,8 @@ export async function runSynthesisAgent(
   feasibility: FeasibilitySection
 ): Promise<SynthesisResult> {
   const prompt = `You are synthesizing a full market research report from the stages below into an executive summary, SWOT analysis, a color-coded viability verdict, and pros/cons. Be honest — if the evidence is weak, the verdict should be amber or red, not flattering. Cite specifics from the research below rather than generic startup advice.
+
+Write everything as short, scannable bullet points, not paragraphs. executive_summary must be 3-5 bullets, each a single short sentence (max ~15 words) covering: what the idea is, the core opportunity, and the biggest risk. verdict.reasoning must be one short sentence (max ~20 words). pros and cons should already be short phrases — keep them that way.
 
 Idea: ${state.form.ideaName}
 Description: ${state.form.description}

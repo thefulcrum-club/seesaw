@@ -5,23 +5,30 @@ function Quadrant({
   emoji,
   title,
   items,
-  bg,
-  border,
+  accent,
 }: {
   emoji: string;
   title: string;
   items: string[];
-  bg: string;
-  border: string;
+  accent: string;
 }) {
   return (
-    <div className={`rounded-3xl border-2 ${border} ${bg} p-5`}>
-      <p className="font-bold mb-2">
+    <div className="rounded-3xl border border-border bg-card p-5">
+      <p
+        className="font-mono text-[11px] uppercase tracking-[0.22em] mb-3"
+        style={{ color: accent }}
+      >
         {emoji} {title}
       </p>
-      <ul className="text-sm space-y-1 list-disc list-inside">
+      <ul className="space-y-2">
         {items.map((item, i) => (
-          <li key={i}>{item}</li>
+          <li key={i} className="flex gap-2.5 text-sm text-foreground/90 leading-snug">
+            <span
+              className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full"
+              style={{ backgroundColor: accent }}
+            />
+            <span>{item}</span>
+          </li>
         ))}
       </ul>
     </div>
@@ -31,34 +38,15 @@ function Quadrant({
 export function SwotQuadrant({ swot }: { swot: MarketResearchReport["swot"] }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2">
-      <Quadrant
-        emoji="💪"
-        title="Strengths"
-        items={swot.strengths}
-        bg="bg-green-50"
-        border="border-green-200"
-      />
-      <Quadrant
-        emoji="⚠️"
-        title="Weaknesses"
-        items={swot.weaknesses}
-        bg="bg-red-50"
-        border="border-red-200"
-      />
+      <Quadrant emoji="💪" title="Strengths" items={swot.strengths} accent="#34d399" />
+      <Quadrant emoji="⚠️" title="Weaknesses" items={swot.weaknesses} accent="#fb7185" />
       <Quadrant
         emoji="🚀"
         title="Opportunities"
         items={swot.opportunities}
-        bg="bg-blue-50"
-        border="border-blue-200"
+        accent="#6187ec"
       />
-      <Quadrant
-        emoji="🌩️"
-        title="Threats"
-        items={swot.threats}
-        bg="bg-amber-50"
-        border="border-amber-200"
-      />
+      <Quadrant emoji="🌩️" title="Threats" items={swot.threats} accent="#fbbf24" />
     </div>
   );
 }

@@ -9,10 +9,11 @@ import { SwotQuadrant } from "./SwotQuadrant";
 import { CompetitorCard } from "./CompetitorCard";
 import { PmfEvidenceList } from "./PmfEvidenceList";
 import { SourcesList } from "./SourcesList";
+import { IdeateChat } from "./IdeateChat";
 import { DownloadPdfButton } from "../DownloadPdfButton";
 import { fireConfetti } from "@/lib/confetti";
 
-type Tab = "overview" | "market" | "swot" | "competitors" | "pmf-sources";
+type Tab = "overview" | "market" | "swot" | "competitors" | "pmf-sources" | "ideate";
 
 const TABS: { key: Tab; label: string; emoji: string }[] = [
   { key: "overview", label: "Overview", emoji: "🏠" },
@@ -20,21 +21,62 @@ const TABS: { key: Tab; label: string; emoji: string }[] = [
   { key: "swot", label: "SWOT", emoji: "🧭" },
   { key: "competitors", label: "Competitors", emoji: "⚔️" },
   { key: "pmf-sources", label: "PMF & Sources", emoji: "🔍" },
+  { key: "ideate", label: "Ideate", emoji: "💡" },
 ];
 
 function Card({ children }: { children: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-3xl border-2 border-gray-100 p-6">
+    <div className="bg-card rounded-3xl border border-border p-6">
       {children}
+    </div>
+  );
+}
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-brand mb-3">
+      {children}
+    </p>
+  );
+}
+
+function BulletList({ items }: { items: string[] }) {
+  return (
+    <ul className="space-y-2">
+      {items.map((item, i) => (
+        <li key={i} className="flex gap-2.5 text-sm text-foreground/90 leading-snug">
+          <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
+          <span>{item}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function StatBlock({
+  label,
+  items,
+}: {
+  label: string;
+  items: string[];
+}) {
+  return (
+    <div>
+      <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-2">
+        {label}
+      </p>
+      <BulletList items={items} />
     </div>
   );
 }
 
 export function ReportView({
   report,
+  sessionId,
   onNewResearch,
 }: {
   report: MarketResearchReport;
+  sessionId: string | null;
   onNewResearch: () => void;
 }) {
   const [activeTab, setActiveTab] = useState<Tab>("overview");
@@ -48,17 +90,25 @@ export function ReportView({
   }, [report.verdict.rating]);
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-16">
+    <div className="max-w-4xl mx-auto space-y-6 pb-16 pt-10 px-6">
       <div className="flex flex-wrap justify-center gap-2">
         {TABS.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+            className={`px-4 py-2 rounded-full font-mono text-[11px] uppercase tracking-[0.16em] transition-colors ${
               activeTab === tab.key
-                ? "bg-violet-600 text-white"
-                : "bg-violet-50 text-violet-700 hover:bg-violet-100"
+                ? "text-white"
+                : "bg-card text-muted-foreground border border-border hover:text-foreground"
             }`}
+            style={
+              activeTab === tab.key
+                ? {
+                    backgroundColor: "var(--brand)",
+                    boxShadow: "0 10px 30px -10px var(--brand)",
+                  }
+                : undefined
+            }
           >
             {tab.emoji} {tab.label}
           </button>
@@ -74,58 +124,48 @@ export function ReportView({
           <VerdictGauge verdict={report.verdict} />
 
           <Card>
-            <p className="font-bold mb-2">📝 Executive summary</p>
-            <p className="text-sm text-gray-700">{report.executive_summary}</p>
+            <SectionLabel>📝 Executive summary</SectionLabel>
+            <BulletList items={report.executive_summary} />
           </Card>
 
           <Card>
-            <p className="font-bold mb-2">💰 Economics</p>
-            <p className="text-sm">
-              <strong>Pricing model:</strong> {report.economics.pricing_model}
-            </p>
-            <p className="text-sm">
-              <strong>Implied margin:</strong> {report.economics.implied_margin}
-            </p>
-            <p className="text-sm">
-              <strong>Capital target to SOM:</strong>{" "}
-              {report.economics.capital_target_to_som}
-            </p>
+            <SectionLabel>💰 Economics</SectionLabel>
+            <div className="grid gap-5 sm:grid-cols-3">
+              <StatBlock label="Pricing model" items={report.economics.pricing_model} />
+              <StatBlock label="Implied margin" items={report.economics.implied_margin} />
+              <StatBlock
+                label="Capital target to SOM"
+                items={report.economics.capital_target_to_som}
+              />
+            </div>
           </Card>
 
           <Card>
-            <p className="font-bold mb-2">🏗️ Feasibility</p>
-            <p className="text-sm">
-              <strong>Technical:</strong> {report.feasibility.technical}
-            </p>
-            <p className="text-sm">
-              <strong>Regulatory:</strong> {report.feasibility.regulatory}
-            </p>
-            <p className="text-sm">
-              <strong>Go-to-market:</strong> {report.feasibility.go_to_market}
-            </p>
-            {report.feasibility.geo.applicable && (
-              <p className="text-sm">
-                <strong>Local market:</strong> {report.feasibility.geo.analysis}
-              </p>
+            <SectionLabel>🏗️ Feasibility</SectionLabel>
+            <div className="grid gap-5 sm:grid-cols-3">
+              <StatBlock label="Technical" items={report.feasibility.technical} />
+              <StatBlock label="Regulatory" items={report.feasibility.regulatory} />
+              <StatBlock label="Go-to-market" items={report.feasibility.go_to_market} />
+            </div>
+            {report.feasibility.geo.applicable && report.feasibility.geo.analysis && (
+              <div className="mt-5 pt-5 border-t border-border">
+                <StatBlock label="Local market" items={report.feasibility.geo.analysis} />
+              </div>
             )}
           </Card>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="bg-green-50 rounded-3xl border-2 border-green-200 p-5">
-              <p className="font-bold mb-2">✅ Pros</p>
-              <ul className="text-sm space-y-1 list-disc list-inside">
-                {report.pros.map((p, i) => (
-                  <li key={i}>{p}</li>
-                ))}
-              </ul>
+            <div className="bg-card rounded-3xl border border-border p-5">
+              <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-emerald-400 mb-3">
+                ✅ Pros
+              </p>
+              <BulletList items={report.pros} />
             </div>
-            <div className="bg-red-50 rounded-3xl border-2 border-red-200 p-5">
-              <p className="font-bold mb-2">❌ Cons</p>
-              <ul className="text-sm space-y-1 list-disc list-inside">
-                {report.cons.map((c, i) => (
-                  <li key={i}>{c}</li>
-                ))}
-              </ul>
+            <div className="bg-card rounded-3xl border border-border p-5">
+              <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-rose-400 mb-3">
+                ❌ Cons
+              </p>
+              <BulletList items={report.cons} />
             </div>
           </div>
         </div>
@@ -149,16 +189,20 @@ export function ReportView({
         <div className="space-y-6">
           <PmfEvidenceList pmfSignal={report.pmf_signal} />
           <Card>
-            <p className="font-bold mb-2">🔗 Sources</p>
+            <SectionLabel>🔗 Sources</SectionLabel>
             <SourcesList sources={report.sources} />
           </Card>
         </div>
       )}
 
+      {activeTab === "ideate" && (
+        <IdeateChat report={report} sessionId={sessionId} />
+      )}
+
       <div className="text-center">
         <button
           onClick={onNewResearch}
-          className="border-2 border-violet-200 text-violet-700 rounded-full px-6 py-2 font-medium hover:bg-violet-50"
+          className="border border-border text-muted-foreground rounded-full px-6 py-2.5 font-mono text-[11px] uppercase tracking-[0.18em] hover:text-foreground hover:border-brand transition-colors"
         >
           🔄 New research
         </button>

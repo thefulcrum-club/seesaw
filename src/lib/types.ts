@@ -51,20 +51,20 @@ export type PmfSignalSection = {
 };
 
 export type EconomicsSection = {
-  pricing_model: string;
-  implied_margin: string;
-  capital_target_to_som: string;
+  pricing_model: string[];
+  implied_margin: string[];
+  capital_target_to_som: string[];
 };
 
 export type FeasibilitySection = {
-  technical: string;
-  regulatory: string;
-  go_to_market: string;
-  geo: { applicable: boolean; analysis: string | null };
+  technical: string[];
+  regulatory: string[];
+  go_to_market: string[];
+  geo: { applicable: boolean; analysis: string[] | null };
 };
 
 export type MarketResearchReport = {
-  executive_summary: string;
+  executive_summary: string[];
   tam_sam_som: {
     tam: string;
     sam: string;
@@ -88,4 +88,8 @@ export type MarketResearchReport = {
   pros: string[];
   cons: string[];
   sources: { title: string; url: string }[];
+};
+
+export type MarketResearchReportResponse = MarketResearchReport & {
+  sessionId: string | null;
 };

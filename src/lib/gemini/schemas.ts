@@ -53,9 +53,9 @@ export const pmfSignalSchema = {
 export const economicsSchema = {
   type: "object",
   properties: {
-    pricing_model: { type: "string" },
-    implied_margin: { type: "string" },
-    capital_target_to_som: { type: "string" },
+    pricing_model: { type: "array", items: { type: "string" } },
+    implied_margin: { type: "array", items: { type: "string" } },
+    capital_target_to_som: { type: "array", items: { type: "string" } },
   },
   required: ["pricing_model", "implied_margin", "capital_target_to_som"],
 };
@@ -63,14 +63,18 @@ export const economicsSchema = {
 export const feasibilitySchema = {
   type: "object",
   properties: {
-    technical: { type: "string" },
-    regulatory: { type: "string" },
-    go_to_market: { type: "string" },
+    technical: { type: "array", items: { type: "string" } },
+    regulatory: { type: "array", items: { type: "string" } },
+    go_to_market: { type: "array", items: { type: "string" } },
     geo: {
       type: "object",
       properties: {
         applicable: { type: "boolean" },
-        analysis: { type: "string", nullable: true },
+        analysis: {
+          type: "array",
+          items: { type: "string" },
+          nullable: true,
+        },
       },
       required: ["applicable", "analysis"],
     },
@@ -100,7 +104,7 @@ export const marketLocaleSchema = {
 export const synthesisSchema = {
   type: "object",
   properties: {
-    executive_summary: { type: "string" },
+    executive_summary: { type: "array", items: { type: "string" } },
     swot: {
       type: "object",
       properties: {

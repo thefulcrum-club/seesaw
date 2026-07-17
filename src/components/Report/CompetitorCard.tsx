@@ -15,26 +15,46 @@ export function CompetitorCard({
     <button
       type="button"
       onClick={() => setFlipped((f) => !f)}
-      className="text-left [perspective:1000px] h-40 w-full"
+      className="text-left [perspective:1000px] h-56 w-full"
       aria-label={`Toggle details for ${competitor.name}`}
     >
       <div
         className="relative h-full w-full [transform-style:preserve-3d] transition-transform duration-500"
         style={{ transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)" }}
       >
-        <div className="absolute inset-0 [backface-visibility:hidden] bg-gradient-to-br from-violet-100 to-pink-100 rounded-3xl border-2 border-violet-200 p-4 flex flex-col justify-center">
-          <p className="font-bold text-lg">{competitor.name}</p>
-          <p className="text-sm text-gray-700 mt-1">{competitor.description}</p>
-          <p className="text-xs text-violet-600 mt-2">Click to flip →</p>
+        <div
+          className="absolute inset-0 [backface-visibility:hidden] rounded-3xl border border-border p-4 flex flex-col overflow-hidden"
+          style={{
+            background:
+              "radial-gradient(circle at 30% 20%, color-mix(in oklab, var(--brand) 25%, var(--card)) 0%, var(--card) 70%)",
+          }}
+        >
+          <p className="font-serif italic text-lg text-foreground line-clamp-2">
+            {competitor.name}
+          </p>
+          <p className="text-sm text-muted-foreground mt-1 line-clamp-4 flex-1">
+            {competitor.description}
+          </p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-brand mt-2 shrink-0">
+            Click to flip →
+          </p>
         </div>
         <div
-          className="absolute inset-0 [backface-visibility:hidden] bg-gradient-to-br from-blue-100 to-cyan-100 rounded-3xl border-2 border-blue-200 p-4 flex flex-col justify-center"
-          style={{ transform: "rotateY(180deg)" }}
+          className="absolute inset-0 [backface-visibility:hidden] rounded-3xl border border-border p-4 flex flex-col overflow-hidden"
+          style={{
+            transform: "rotateY(180deg)",
+            background:
+              "radial-gradient(circle at 70% 80%, color-mix(in oklab, var(--brand) 25%, var(--card)) 0%, var(--card) 70%)",
+          }}
         >
-          <p className="text-xs font-bold text-blue-700 uppercase">Pricing</p>
-          <p className="text-sm text-gray-700 mb-2">{competitor.pricing}</p>
-          <p className="text-xs font-bold text-blue-700 uppercase">Positioning</p>
-          <p className="text-sm text-gray-700">{competitor.positioning}</p>
+          <p className="font-mono text-[10px] font-bold text-brand uppercase tracking-[0.18em] shrink-0">
+            Pricing
+          </p>
+          <p className="text-sm text-foreground/90 mb-2 line-clamp-2">{competitor.pricing}</p>
+          <p className="font-mono text-[10px] font-bold text-brand uppercase tracking-[0.18em] shrink-0">
+            Positioning
+          </p>
+          <p className="text-sm text-foreground/90 line-clamp-3">{competitor.positioning}</p>
         </div>
       </div>
     </button>

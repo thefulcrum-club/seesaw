@@ -30,11 +30,11 @@ export function VerdictGauge({
   }, [verdict.rating]);
 
   return (
-    <div className="bg-white rounded-3xl border-2 border-purple-100 p-6 text-center">
+    <div className="bg-card rounded-3xl border border-border p-6 text-center">
       <svg viewBox="0 0 200 110" className="mx-auto w-64">
-        <path d="M 10 100 A 90 90 0 0 1 76 15" fill="none" stroke="#fca5a5" strokeWidth="18" strokeLinecap="round" />
-        <path d="M 76 15 A 90 90 0 0 1 124 15" fill="none" stroke="#fde68a" strokeWidth="18" strokeLinecap="round" />
-        <path d="M 124 15 A 90 90 0 0 1 190 100" fill="none" stroke="#86efac" strokeWidth="18" strokeLinecap="round" />
+        <path d="M 10 100 A 90 90 0 0 1 76 15" fill="none" stroke="#7a2b2b" strokeWidth="18" strokeLinecap="round" />
+        <path d="M 76 15 A 90 90 0 0 1 124 15" fill="none" stroke="#7a6a2b" strokeWidth="18" strokeLinecap="round" />
+        <path d="M 124 15 A 90 90 0 0 1 190 100" fill="none" stroke="#2b7a4f" strokeWidth="18" strokeLinecap="round" />
         <g
           style={{
             transform: `rotate(${angle}deg)`,
@@ -42,12 +42,12 @@ export function VerdictGauge({
             transition: "transform 1s cubic-bezier(0.34, 1.56, 0.64, 1)",
           }}
         >
-          <line x1="100" y1="100" x2="100" y2="30" stroke="#7c3aed" strokeWidth="4" strokeLinecap="round" />
+          <line x1="100" y1="100" x2="100" y2="30" stroke="var(--brand)" strokeWidth="4" strokeLinecap="round" />
         </g>
-        <circle cx="100" cy="100" r="8" fill="#7c3aed" />
+        <circle cx="100" cy="100" r="8" fill="var(--brand)" />
       </svg>
-      <p className="text-lg font-bold mt-2">{RATING_LABEL[verdict.rating]}</p>
-      <p className="text-gray-600 mt-2 max-w-md mx-auto">{verdict.reasoning}</p>
+      <p className="font-serif text-xl italic mt-2 text-foreground">{RATING_LABEL[verdict.rating]}</p>
+      <p className="text-muted-foreground mt-2 max-w-md mx-auto text-sm leading-relaxed">{verdict.reasoning}</p>
     </div>
   );
 }

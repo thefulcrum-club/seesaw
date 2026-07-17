@@ -17,38 +17,47 @@ export function PmfEvidenceList({
   const remaining = evidence.length - COLLAPSED_COUNT;
 
   return (
-    <div className="bg-white rounded-3xl border-2 border-yellow-100 p-6">
-      <p className="font-bold mb-2">🔍 Product-market fit signal</p>
-      <p className="text-sm text-gray-700 mb-3">{pmfSignal.summary}</p>
-      <ul className="text-sm space-y-2">
+    <div className="bg-card rounded-3xl border border-border p-6">
+      <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-brand mb-3">
+        🔍 Product-market fit signal
+      </p>
+      <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+        {pmfSignal.summary}
+      </p>
+      <ul className="space-y-2">
         {visible.map((e, i) => (
           <li
             key={i}
-            className={e.source_url ? "" : "italic text-gray-500"}
+            className={`flex gap-2.5 text-sm leading-snug ${
+              e.source_url ? "text-foreground/90" : "italic text-muted-foreground"
+            }`}
           >
-            {e.claim}
-            {e.source_url && (
-              <>
-                {" "}
-                (
-                <a
-                  href={e.source_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 underline"
-                >
-                  source
-                </a>
-                )
-              </>
-            )}
+            <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
+            <span>
+              {e.claim}
+              {e.source_url && (
+                <>
+                  {" "}
+                  (
+                  <a
+                    href={e.source_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-brand underline"
+                  >
+                    source
+                  </a>
+                  )
+                </>
+              )}
+            </span>
           </li>
         ))}
       </ul>
       {remaining > 0 && (
         <button
           onClick={() => setExpanded((x) => !x)}
-          className="text-sm text-violet-600 font-medium mt-3"
+          className="font-mono text-[11px] uppercase tracking-[0.16em] text-brand mt-4"
         >
           {expanded ? "Show less" : `Show ${remaining} more`}
         </button>

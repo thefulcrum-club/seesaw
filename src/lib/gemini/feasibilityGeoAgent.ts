@@ -28,35 +28,37 @@ ${localeInstruction(locale)}
 If you cannot find enough information to assess any of these barriers, say so explicitly.`);
 
   const structured = await runStructuring<{
-    technical: string;
-    regulatory: string;
-    go_to_market: string;
+    technical: string[];
+    regulatory: string[];
+    go_to_market: string[];
   }>(
-    `Structure the following feasibility research into technical, regulatory, and go_to_market fields.
+    `Structure the following feasibility research into technical, regulatory, and go_to_market fields. Each field must be an array of 1-3 short bullet points (max ~12 words each), not a paragraph.
 
 Research:
 ${research.text}`,
     {
       type: "object",
       properties: {
-        technical: { type: "string" },
-        regulatory: { type: "string" },
-        go_to_market: { type: "string" },
+        technical: { type: "array", items: { type: "string" } },
+        regulatory: { type: "array", items: { type: "string" } },
+        go_to_market: { type: "array", items: { type: "string" } },
       },
       required: ["technical", "regulatory", "go_to_market"],
     }
   );
 
-  let geoAnalysis: string | null = null;
+  let geoAnalysis: string[] | null = null;
   if (localClassification.isInherentlyLocal) {
-    const geoStructured = await runStructuring<{ analysis: string }>(
-      `Extract just the local/geo market analysis from the following research into a single "analysis" field.
+    const geoStructured = await runStructuring<{ analysis: string[] }>(
+      `Extract just the local/geo market analysis from the following research into an "analysis" field: an array of 1-3 short bullet points (max ~12 words each), not a paragraph.
 
 Research:
 ${research.text}`,
       {
         type: "object",
-        properties: { analysis: { type: "string" } },
+        properties: {
+          analysis: { type: "array", items: { type: "string" } },
+        },
         required: ["analysis"],
       }
     );
