@@ -4,11 +4,12 @@
 import { useState } from "react";
 import { IdeaForm } from "@/components/IdeaForm";
 import { VoiceIntake } from "@/components/VoiceIntake";
+import { TextIntake } from "@/components/TextIntake";
 import { ReportView } from "@/components/Report/ReportView";
 import { DownloadPdfButton } from "@/components/DownloadPdfButton";
 import type { IdeaFormInput, ResearchState, MarketResearchReport, VoiceExchange } from "@/lib/types";
 
-type Step = "form" | "voice" | "pipeline" | "report" | "error";
+type Step = "form" | "intake-choice" | "voice" | "text" | "pipeline" | "report" | "error";
 
 export default function Home() {
   const [step, setStep] = useState<Step>("form");
@@ -18,10 +19,10 @@ export default function Home() {
 
   function handleFormSubmit(input: IdeaFormInput) {
     setResearchState({ form: input, voiceExchanges: [] });
-    setStep("voice");
+    setStep("intake-choice");
   }
 
-  async function handleVoiceComplete(exchanges: VoiceExchange[]) {
+  async function handleIntakeComplete(exchanges: VoiceExchange[]) {
     if (!researchState) return;
     const updatedState = { ...researchState, voiceExchanges: exchanges };
     setResearchState(updatedState);
@@ -61,10 +62,39 @@ export default function Home() {
 
       {step === "form" && <IdeaForm onSubmit={handleFormSubmit} />}
 
+      {step === "intake-choice" && (
+        <div className="max-w-xl mx-auto text-center space-y-4">
+          <p className="text-gray-600">
+            How would you like to answer a few quick follow-up questions?
+          </p>
+          <div className="flex justify-center gap-4">
+            <button
+              onClick={() => setStep("voice")}
+              className="bg-black text-white rounded px-4 py-2 font-medium"
+            >
+              Voice
+            </button>
+            <button
+              onClick={() => setStep("text")}
+              className="border rounded px-4 py-2 font-medium"
+            >
+              Text
+            </button>
+          </div>
+        </div>
+      )}
+
       {step === "voice" && researchState && (
         <VoiceIntake
           researchState={researchState}
-          onComplete={handleVoiceComplete}
+          onComplete={handleIntakeComplete}
+        />
+      )}
+
+      {step === "text" && researchState && (
+        <TextIntake
+          researchState={researchState}
+          onComplete={handleIntakeComplete}
         />
       )}
 
