@@ -87,6 +87,16 @@ export const localClassifierSchema = {
   required: ["isInherentlyLocal", "reasoning"],
 };
 
+export const marketLocaleSchema = {
+  type: "object",
+  properties: {
+    market: { type: "string", enum: ["india", "us", "global"] },
+    currency: { type: "string", enum: ["INR", "USD"] },
+    reasoning: { type: "string" },
+  },
+  required: ["market", "currency", "reasoning"],
+};
+
 export const synthesisSchema = {
   type: "object",
   properties: {

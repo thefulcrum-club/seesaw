@@ -5,19 +5,22 @@ import { runPmfSignalAgent } from "./pmfSignalAgent";
 import { runEconomicsAgent } from "./economicsAgent";
 import { runFeasibilityGeoAgent } from "./feasibilityGeoAgent";
 import { runSynthesisAgent } from "./synthesisAgent";
+import { classifyMarketLocale } from "./marketLocale";
 import type { ResearchState, MarketResearchReport } from "../types";
 
 export async function runPipeline(
   state: ResearchState
 ): Promise<MarketResearchReport> {
+  const locale = await classifyMarketLocale(state);
+
   const [marketSize, competitors, pmfSignal, feasibility] = await Promise.all([
-    runMarketSizeAgent(state),
-    runCompetitorAgent(state),
+    runMarketSizeAgent(state, locale),
+    runCompetitorAgent(state, locale),
     runPmfSignalAgent(state),
-    runFeasibilityGeoAgent(state),
+    runFeasibilityGeoAgent(state, locale),
   ]);
 
-  const economics = await runEconomicsAgent(state, marketSize);
+  const economics = await runEconomicsAgent(state, marketSize, locale);
 
   const synthesis = await runSynthesisAgent(
     state,

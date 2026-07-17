@@ -1,10 +1,12 @@
 // src/lib/gemini/feasibilityGeoAgent.ts
 import { runGroundedResearch, runStructuring } from "./client";
 import { classifyIsLocal } from "./localClassifier";
-import type { ResearchState, FeasibilitySection } from "../types";
+import { localeInstruction } from "./marketLocale";
+import type { ResearchState, FeasibilitySection, MarketLocale } from "../types";
 
 export async function runFeasibilityGeoAgent(
-  state: ResearchState
+  state: ResearchState,
+  locale: MarketLocale
 ): Promise<FeasibilitySection> {
   const localClassification = await classifyIsLocal(state);
 
@@ -20,6 +22,8 @@ Industry: ${state.form.industry}
 Target market: ${state.form.targetMarket}
 
 ${geoInstruction}
+
+${localeInstruction(locale)}
 
 If you cannot find enough information to assess any of these barriers, say so explicitly.`);
 

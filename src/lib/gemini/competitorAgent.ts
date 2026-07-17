@@ -1,10 +1,12 @@
 // src/lib/gemini/competitorAgent.ts
 import { runGroundedResearch, runStructuring } from "./client";
 import { competitorsSchema } from "./schemas";
-import type { ResearchState, CompetitorSection } from "../types";
+import { localeInstruction } from "./marketLocale";
+import type { ResearchState, CompetitorSection, MarketLocale } from "../types";
 
 export async function runCompetitorAgent(
-  state: ResearchState
+  state: ResearchState,
+  locale: MarketLocale
 ): Promise<CompetitorSection[]> {
   const research = await runGroundedResearch(`Search the web for direct and indirect competitors to this startup idea.
 
@@ -12,6 +14,8 @@ Idea: ${state.form.ideaName}
 Description: ${state.form.description}
 Industry: ${state.form.industry}
 Target market: ${state.form.targetMarket}
+
+${localeInstruction(locale)}
 
 For each competitor found, note their pricing and market positioning. If you cannot find real pricing information for a competitor, say "insufficient data: pricing not publicly available" for that competitor's pricing rather than guessing.`);
 

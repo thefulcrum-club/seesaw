@@ -1,9 +1,10 @@
 // src/lib/gemini/marketSizeAgent.ts
 import { runGroundedResearch, runStructuring } from "./client";
 import { marketSizeSchema } from "./schemas";
-import type { ResearchState, MarketSizeSection } from "../types";
+import { localeInstruction } from "./marketLocale";
+import type { ResearchState, MarketSizeSection, MarketLocale } from "../types";
 
-function buildResearchPrompt(state: ResearchState): string {
+function buildResearchPrompt(state: ResearchState, locale: MarketLocale): string {
   const transcript = state.voiceExchanges
     .map((e) => `Q: ${e.question}\nA: ${e.answerTranscript}`)
     .join("\n\n");
@@ -18,6 +19,8 @@ Target market: ${state.form.targetMarket}
 Additional context from founder interview:
 ${transcript || "(none provided)"}
 
+${localeInstruction(locale)}
+
 Research and estimate TAM (Total Addressable Market), SAM (Serviceable Addressable Market), and SOM (Serviceable Obtainable Market) for this idea, citing real sources with figures and dates where possible. Explain your methodology.
 
 If you cannot find enough real data to support a confident estimate for any of TAM, SAM, or SOM, say so explicitly and explain what's missing rather than guessing a number.`;
@@ -31,9 +34,10 @@ ${researchText}`;
 }
 
 export async function runMarketSizeAgent(
-  state: ResearchState
+  state: ResearchState,
+  locale: MarketLocale
 ): Promise<MarketSizeSection> {
-  const research = await runGroundedResearch(buildResearchPrompt(state));
+  const research = await runGroundedResearch(buildResearchPrompt(state, locale));
   const structured = await runStructuring<{
     tam: string;
     sam: string;

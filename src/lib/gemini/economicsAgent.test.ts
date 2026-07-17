@@ -2,7 +2,7 @@
 import { config } from "dotenv";
 import { describe, it, expect } from "vitest";
 import { runEconomicsAgent } from "./economicsAgent";
-import type { ResearchState, MarketSizeSection } from "../types";
+import type { ResearchState, MarketSizeSection, MarketLocale } from "../types";
 
 config({ path: ".env" });
 config({ path: ".env.local", override: true });
@@ -28,9 +28,15 @@ const sampleMarketSize: MarketSizeSection = {
   sources: [],
 };
 
+const sampleLocale: MarketLocale = {
+  market: "us",
+  currency: "USD",
+  reasoning: "test fixture",
+};
+
 describe.skipIf(!hasApiKey)("economicsAgent (live API)", () => {
   it("returns pricing model, margin, and capital target", async () => {
-    const result = await runEconomicsAgent(sampleState, sampleMarketSize);
+    const result = await runEconomicsAgent(sampleState, sampleMarketSize, sampleLocale);
     expect(result.pricing_model.length).toBeGreaterThan(0);
     expect(result.implied_margin.length).toBeGreaterThan(0);
     expect(result.capital_target_to_som.length).toBeGreaterThan(0);

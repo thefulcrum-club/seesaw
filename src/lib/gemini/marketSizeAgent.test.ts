@@ -3,7 +3,7 @@ import { config } from "dotenv";
 import { describe, it, expect } from "vitest";
 import { runMarketSizeAgent } from "./marketSizeAgent";
 import { classifyIsLocal } from "./localClassifier";
-import type { ResearchState } from "../types";
+import type { ResearchState, MarketLocale } from "../types";
 
 config({ path: ".env" });
 config({ path: ".env.local", override: true });
@@ -21,9 +21,15 @@ const sampleState: ResearchState = {
   voiceExchanges: [],
 };
 
+const sampleLocale: MarketLocale = {
+  market: "us",
+  currency: "USD",
+  reasoning: "test fixture",
+};
+
 describe.skipIf(!hasApiKey)("marketSizeAgent (live API)", () => {
   it("returns a market size section with methodology and sources", async () => {
-    const result = await runMarketSizeAgent(sampleState);
+    const result = await runMarketSizeAgent(sampleState, sampleLocale);
     expect(result.tam.length).toBeGreaterThan(0);
     expect(result.sam.length).toBeGreaterThan(0);
     expect(result.som.length).toBeGreaterThan(0);

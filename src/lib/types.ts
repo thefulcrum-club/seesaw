@@ -22,6 +22,12 @@ export type ResearchState = {
   feasibility?: FeasibilitySection;
 };
 
+export type MarketLocale = {
+  market: "india" | "us" | "global";
+  currency: "INR" | "USD";
+  reasoning: string;
+};
+
 export type SourcedClaim = { claim: string; source_url: string | null };
 
 export type MarketSizeSection = {

@@ -2,7 +2,7 @@
 import { config } from "dotenv";
 import { describe, it, expect } from "vitest";
 import { runCompetitorAgent } from "./competitorAgent";
-import type { ResearchState } from "../types";
+import type { ResearchState, MarketLocale } from "../types";
 
 config({ path: ".env" });
 config({ path: ".env.local", override: true });
@@ -20,9 +20,15 @@ const sampleState: ResearchState = {
   voiceExchanges: [],
 };
 
+const sampleLocale: MarketLocale = {
+  market: "us",
+  currency: "USD",
+  reasoning: "test fixture",
+};
+
 describe.skipIf(!hasApiKey)("competitorAgent (live API)", () => {
   it("returns at least one competitor with required fields", async () => {
-    const result = await runCompetitorAgent(sampleState);
+    const result = await runCompetitorAgent(sampleState, sampleLocale);
     expect(result.length).toBeGreaterThan(0);
     expect(result[0]).toHaveProperty("name");
     expect(result[0]).toHaveProperty("pricing");
