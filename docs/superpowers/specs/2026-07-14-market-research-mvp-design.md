@@ -28,6 +28,10 @@ Turn-based, not full-duplex. Fully spoken: the question is read aloud via browse
 
 This replaces the PRD's cut "30-minute structured interview" concept (deferred to v2) with a lighter, adaptive, fully-spoken intake call.
 
+### Text Intake Alternative
+
+After the idea form, the user chooses Voice or Text before intake begins. Text mode drives the identical adaptive question loop against the same `/api/voice-question` endpoint and produces the same `research_state` shape — the only difference is step 2/3 above are replaced with a plain typed textarea answer (no `speechSynthesis`, no `MediaRecorder`, no Whisper call). Added so the product doesn't hard-require microphone access, and so the pipeline can be exercised without the Whisper microservice running.
+
 ## Agentic Pipeline
 
 Sequential, not one large prompt. A shared `research_state` JSON object is built up stage by stage; each stage reads what's already known and writes its own section with its own focused Gemini + search-grounding calls.
