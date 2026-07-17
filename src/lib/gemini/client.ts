@@ -4,9 +4,19 @@ import { GoogleGenAI } from "@google/genai";
 const MODEL = "gemini-3-flash-preview";
 
 function getClient() {
+  const project = process.env.GOOGLE_CLOUD_PROJECT;
+  const location = process.env.GOOGLE_CLOUD_LOCATION ?? "us-central1";
+
+  if (project) {
+    // Vertex AI mode: uses Application Default Credentials (gcloud auth
+    // application-default login) and the GCP project's own billing/quota,
+    // bypassing the Gemini API free-tier per-key daily cap.
+    return new GoogleGenAI({ vertexai: true, project, location });
+  }
+
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error("GEMINI_API_KEY is not set");
+    throw new Error("GEMINI_API_KEY is not set (and GOOGLE_CLOUD_PROJECT is not set for Vertex AI mode)");
   }
   return new GoogleGenAI({ apiKey });
 }
