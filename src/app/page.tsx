@@ -15,13 +15,71 @@ import type {
   VoiceExchange,
 } from "@/lib/types";
 
-type Step = "form" | "intake-choice" | "voice" | "text" | "pipeline" | "report" | "error";
+type Step =
+  | "landing"
+  | "form"
+  | "intake-choice"
+  | "voice"
+  | "text"
+  | "pipeline"
+  | "report"
+  | "error";
 
 function Wordmark() {
   return (
     <span className="font-serif italic">
-      fulcrum<span style={{ color: "var(--brand)" }}>.</span>
+      seesaw<span style={{ color: "var(--brand)" }}>.</span>
     </span>
+  );
+}
+
+function Landing({
+  onStart,
+  leaving,
+}: {
+  onStart: () => void;
+  leaving: boolean;
+}) {
+  return (
+    <div
+      className={`flex min-h-[80vh] flex-col items-center justify-center text-center px-6 ${
+        leaving ? "animate-hero-out" : "animate-step-in"
+      }`}
+    >
+      <div className="mb-8 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.32em] text-muted-foreground">
+        <span
+          className="inline-block h-1.5 w-1.5 rounded-full"
+          style={{ backgroundColor: "var(--brand)", animation: "pulse-dot 2s ease-in-out infinite" }}
+        />
+        an intelligence layer for founders
+      </div>
+
+      <h1 className="font-serif leading-[0.92] tracking-tight text-balance">
+        <span className="block text-[clamp(1.5rem,4vw,2.75rem)] font-medium">
+          market simulation, before you build.
+        </span>
+        <span className="block text-[clamp(4rem,14vw,11rem)] italic mt-2">
+          <Wordmark />
+        </span>
+      </h1>
+
+      <p className="mt-8 max-w-xl font-serif text-lg leading-relaxed text-muted-foreground md:text-xl">
+        Seesaw stress-tests your idea — market size, competitors, PMF signal, and a
+        straight verdict — before you spend six figures finding out the hard way.
+      </p>
+
+      <button
+        onClick={onStart}
+        className="mt-12 inline-flex items-center gap-2 rounded-full px-8 py-4 font-mono text-[12px] uppercase tracking-[0.22em] text-white transition-transform hover:-translate-y-0.5"
+        style={{ backgroundColor: "var(--brand)", boxShadow: "0 20px 60px -15px var(--brand)" }}
+      >
+        Simulate your idea <span>→</span>
+      </button>
+
+      <p className="mt-8 font-mono text-[10px] uppercase tracking-[0.28em] text-muted-foreground">
+        by fulcrum.
+      </p>
+    </div>
   );
 }
 
@@ -30,7 +88,7 @@ function Footer() {
     <footer className="relative z-10 mt-24 border-t border-border">
       <div className="mx-auto w-full max-w-[1400px] px-6 py-10 text-left">
         <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-muted-foreground">
-          © {new Date().getFullYear()} fulcrum. · market research
+          © {new Date().getFullYear()} seesaw by fulcrum. · market research
         </p>
       </div>
       <div className="select-none overflow-hidden px-6">
@@ -46,11 +104,20 @@ function Footer() {
 }
 
 export default function Home() {
-  const [step, setStep] = useState<Step>("form");
+  const [step, setStep] = useState<Step>("landing");
+  const [leavingLanding, setLeavingLanding] = useState(false);
   const [researchState, setResearchState] = useState<ResearchState | null>(null);
   const [report, setReport] = useState<MarketResearchReport | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  function handleStart() {
+    setLeavingLanding(true);
+    setTimeout(() => {
+      setStep("form");
+      setLeavingLanding(false);
+    }, 380);
+  }
 
   function handleFormSubmit(input: IdeaFormInput) {
     setResearchState({ form: input, voiceExchanges: [] });
@@ -91,12 +158,26 @@ export default function Home() {
     setStep("form");
   }
 
+  if (step === "landing") {
+    return (
+      <div className="flex flex-col min-h-full">
+        <main className="flex-1 flex items-center justify-center p-8">
+          <Landing onStart={handleStart} leaving={leavingLanding} />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col min-h-full">
       <main className="flex-1 p-8">
-        <h1 className="text-4xl text-center mb-4 font-serif italic">
+        <h1 className="text-4xl text-center mb-1 font-serif italic">
           <Wordmark /> market research
         </h1>
+        <p className="text-center mb-4 font-mono text-[10px] uppercase tracking-[0.28em] text-muted-foreground">
+          by fulcrum.
+        </p>
         <p className="text-center mb-10">
           <Link
             href="/sessions"

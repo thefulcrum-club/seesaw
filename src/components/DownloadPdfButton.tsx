@@ -127,9 +127,12 @@ function ReportPdfDocument({ report }: { report: MarketResearchReport }) {
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.brandRow}>
-          <Text style={styles.brand}>
-            fulcrum<Text style={styles.brandDot}>.</Text>
-          </Text>
+          <View>
+            <Text style={styles.brand}>
+              seesaw<Text style={styles.brandDot}>.</Text>
+            </Text>
+            <Text style={styles.tagline}>by fulcrum.</Text>
+          </View>
           <Text style={styles.tagline}>Market Research Report</Text>
         </View>
 
@@ -203,7 +206,7 @@ function ReportPdfDocument({ report }: { report: MarketResearchReport }) {
 }
 
 export function DownloadPdfButton({ report }: { report: MarketResearchReport }) {
-  const [fileName] = useState(() => `fulcrum-market-research-${Date.now()}.pdf`);
+  const [fileName] = useState(() => `seesaw-market-research-${Date.now()}.pdf`);
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
 
   async function handleClick() {

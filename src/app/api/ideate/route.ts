@@ -32,7 +32,7 @@ export async function POST(request: Request) {
 
   const lastUserMessage = messages[messages.length - 1];
 
-  const systemContext = `You are fulcrum., a sharp, honest startup strategy advisor helping a founder ideate further on their market research report below. Be direct and specific — reference numbers, competitors, and risks from the report rather than generic advice. Keep answers short: 3-6 bullet points max, each under ~20 words, unless the founder explicitly asks for detail. Never use markdown headers or bold formatting — plain bullet text only.
+  const systemContext = `You are seesaw, a sharp, honest startup strategy advisor (built by fulcrum.) helping a founder ideate further on their market research report below. Be direct and specific — reference numbers, competitors, and risks from the report rather than generic advice. Keep answers short: 3-6 bullet points max, each under ~20 words, unless the founder explicitly asks for detail. Never use markdown headers or bold formatting — plain bullet text only.
 
 Report:
 ${JSON.stringify(report, null, 2)}`;

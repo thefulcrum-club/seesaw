@@ -1,36 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<p align="center">
+  <img src="docs/seesaw-wordmark.svg" alt="seesaw by fulcrum." width="480" />
+</p>
 
-## Getting Started
+<p align="center">
+  <strong>Market simulation, before you build.</strong>
+</p>
 
-First, run the development server:
+---
+
+Seesaw is an intelligence layer for founders. Describe your idea, answer a few
+follow-up questions by voice or text, and seesaw stress-tests it — market
+size, competitive landscape, product-market-fit signal, unit economics,
+feasibility — before you spend six figures finding out the hard way. No fluff,
+just a straight verdict backed by real research.
+
+Every report is generated fresh, grounded in live web research and (where
+available) precedent from real startup case studies, then handed back as a
+structured, explorable dashboard you can revisit, share, or export as a PDF.
+
+## How it works
+
+1. **Pitch it.** Describe your idea through a short form.
+2. **Get quizzed.** A voice or text intake asks targeted follow-up questions
+   to sharpen the research brief.
+3. **Watch it think.** A pipeline of specialized research agents runs
+   concurrently against your idea.
+4. **Get the verdict.** A synthesis agent weighs every signal into one
+   report: TAM/SAM/SOM, competitor breakdown, SWOT, PMF evidence, economics,
+   feasibility, and a clear go/no-go read.
+5. **Keep it.** Reports are saved to session history and downloadable as PDF.
+
+## Tech
+
+- **Framework** — [Next.js](https://nextjs.org) (App Router) + React 19,
+  TypeScript throughout.
+- **Styling** — Tailwind CSS v4, a custom serif/mono editorial type system
+  (Playfair Display + JetBrains Mono), and an animated brand-gradient shell.
+- **Research pipeline** — a set of cooperating Gemini agents
+  (`src/lib/gemini/*`), each owning one lens on the idea:
+  - `marketSizeAgent` — TAM/SAM/SOM, locale-aware (India/US/Global)
+  - `competitorAgent` — competitive landscape
+  - `pmfSignalAgent` — product-market-fit evidence
+  - `economicsAgent` — unit economics
+  - `feasibilityGeoAgent` — feasibility and geographic fit
+  - `synthesisAgent` — combines every signal into the final verdict
+
+  Agents use grounded web search via `@google/genai` rather than relying on
+  model priors alone.
+- **Voice** — speech-to-text via a local Whisper service, text-to-speech via
+  Kokoro TTS (replacing browser `speechSynthesis` for consistent, higher
+  quality voice intake).
+- **Persistence** — SQLite via Prisma ORM (`Session`, `Report`,
+  `VoiceExchange`, `IdeateMessage` models), with a `better-sqlite3` adapter.
+- **PDF export** — reports render to downloadable PDFs via
+  `@react-pdf/renderer`.
+- **Testing** — Vitest, with unit coverage on each research agent and the
+  pipeline orchestration.
+
+## Getting started
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run lint   # eslint
+npm run test   # vitest
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Prisma schema lives in `prisma/`; the SQLite dev database is `dev.db`.
 
-## Learn More
+## Brand
 
-To learn more about Next.js, take a look at the following resources:
+<p align="center">
+  <img src="docs/seesaw-brandkit.png" alt="seesaw brand kit — colors, type, components" width="640" />
+</p>
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Indigo (`#1612D3`) on black, Playfair Display italic for voice, JetBrains Mono
+uppercase for structure. Full reference in [`docs/seesaw-brandkit.png`](docs/seesaw-brandkit.png).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+<p align="center"><sub>© fulcrum. seesaw is fulcrum's market research product.</sub></p>

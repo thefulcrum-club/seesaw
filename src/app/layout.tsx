@@ -14,7 +14,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "fulcrum. — Market Simulation for Founders",
+  title: "seesaw by fulcrum. — Market Simulation for Founders",
   description: "AI-powered market research reports for founders",
 };
 
