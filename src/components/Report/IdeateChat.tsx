@@ -2,8 +2,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import type { MarketResearchReport } from "@/lib/types";
-import type { IdeateMessage } from "@/app/api/ideate/route";
+import { backendUrl } from "@/lib/backend";
+import type { MarketResearchReport, IdeateMessage } from "@/lib/types";
 
 const STARTER_PROMPTS = [
   "What if we targeted enterprise instead?",
@@ -39,7 +39,7 @@ export function IdeateChat({
     setLoading(true);
 
     try {
-      const res = await fetch("/api/ideate", {
+      const res = await fetch(backendUrl("/ideate"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ report, messages: nextMessages, sessionId }),

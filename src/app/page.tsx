@@ -7,6 +7,7 @@ import { IdeaForm } from "@/components/IdeaForm";
 import { VoiceIntake } from "@/components/VoiceIntake";
 import { TextIntake } from "@/components/TextIntake";
 import { ReportView } from "@/components/Report/ReportView";
+import { backendUrl } from "@/lib/backend";
 import type {
   IdeaFormInput,
   ResearchState,
@@ -134,7 +135,7 @@ export default function Home() {
 
   async function runPipeline(state: ResearchState) {
     try {
-      const res = await fetch("/api/research", {
+      const res = await fetch(backendUrl("/research"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ researchState: state }),

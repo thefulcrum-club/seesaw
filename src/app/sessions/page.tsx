@@ -3,7 +3,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import type { SessionSummary } from "@/app/api/sessions/route";
+import { backendUrl } from "@/lib/backend";
+import type { SessionSummary } from "@/lib/types";
 
 const VERDICT_DOT: Record<string, string> = {
   green: "#34d399",
@@ -16,7 +17,7 @@ export default function SessionsPage() {
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    fetch("/api/sessions")
+    fetch(backendUrl("/sessions"))
       .then((res) => {
         if (!res.ok) throw new Error("failed");
         return res.json();

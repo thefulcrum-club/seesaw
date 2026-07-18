@@ -2,7 +2,7 @@
 # scripts/dev-down.sh
 #
 # Stops the tmux session started by dev-up.sh, which in turn kills every
-# caffeinate-wrapped process running inside it (Next.js, whisper-service,
+# caffeinate-wrapped process running inside it (Next.js, seesaw-backend,
 # kokoro's docker container, ngrok).
 
 set -euo pipefail

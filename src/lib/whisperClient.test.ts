@@ -3,10 +3,10 @@ import { describe, it, expect } from "vitest";
 import { transcribeAudio } from "./whisperClient";
 import { readFileSync } from "fs";
 
-async function whisperServiceReachable(): Promise<boolean> {
+async function backendReachable(): Promise<boolean> {
   try {
     const res = await fetch(
-      `${process.env.WHISPER_SERVICE_URL ?? "http://localhost:8000"}/health`
+      `${process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000"}/health`
     );
     return res.ok;
   } catch {
@@ -14,11 +14,11 @@ async function whisperServiceReachable(): Promise<boolean> {
   }
 }
 
-describe("transcribeAudio (live whisper-service)", () => {
+describe("transcribeAudio (live seesaw-backend)", () => {
   it("transcribes a real audio file into non-empty text", async () => {
-    const reachable = await whisperServiceReachable();
+    const reachable = await backendReachable();
     if (!reachable) {
-      console.warn("whisper-service not reachable at localhost:8000, skipping");
+      console.warn("seesaw-backend not reachable at localhost:8000, skipping");
       return;
     }
 

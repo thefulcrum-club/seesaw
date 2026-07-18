@@ -1,17 +1,17 @@
 // src/lib/whisperClient.ts
+import { backendUrl } from "./backend";
 
 export async function transcribeAudio(audioBlob: Blob): Promise<string> {
-  const url = process.env.NEXT_PUBLIC_WHISPER_SERVICE_URL ?? "http://localhost:8000";
   const formData = new FormData();
   formData.append("audio", audioBlob, "answer.webm");
 
-  const response = await fetch(`${url}/transcribe`, {
+  const response = await fetch(backendUrl("/transcribe"), {
     method: "POST",
     body: formData,
   });
 
   if (!response.ok) {
-    throw new Error(`Whisper service returned ${response.status}`);
+    throw new Error(`Backend transcribe request failed: ${response.status}`);
   }
 
   const data = (await response.json()) as { text: string };

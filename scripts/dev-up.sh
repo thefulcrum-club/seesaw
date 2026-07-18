@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 # scripts/dev-up.sh
 #
-# Starts the full local dev stack for fulcrum:
+# Starts the full local dev stack for seesaw:
 #   - Next.js app          (:3000)  — this repo (thefulcrum-club/seesaw)
 #   - seesaw-backend        (:8000)  — python venv + uvicorn, sibling repo
 #                                       (thefulcrum-club/seesaw-backend)
-#   - kokoro-fastapi        (:8880)  — docker
-#   - ngrok tunnels for all three (named tunnels, one agent)
+#   - kokoro-fastapi        (:8880)  — docker, only reachable by seesaw-backend
+#   - ngrok tunnels for next + seesaw-backend (named tunnels, one agent)
 #
 # Everything runs in a detached tmux session named "fulcrum", each service in
 # its own window, wrapped in `caffeinate` so the Mac won't sleep mid-session.
 # After ngrok tunnels come up, .env.local is rewritten with the fresh public
-# URLs and the Next.js window is restarted so NEXT_PUBLIC_* picks them up.
+# backend URL and the Next.js window is restarted so NEXT_PUBLIC_* picks it up.
 #
 # Usage:
 #   ./scripts/dev-up.sh          # start everything
@@ -69,17 +69,17 @@ if ! docker info >/dev/null 2>&1; then
 fi
 
 # --- ngrok tunnel config (named tunnels, single agent) ------------------
+# Only next + backend get public tunnels — kokoro is internal-only, reached
+# directly by seesaw-backend over localhost, matching production (where it's
+# a private Render service with no public URL either).
 cat > "$NGROK_CONFIG" <<'EOF'
 version: "3"
 tunnels:
   next:
     addr: 3000
     proto: http
-  whisper:
+  backend:
     addr: 8000
-    proto: http
-  kokoro:
-    addr: 8880
     proto: http
 EOF
 
@@ -87,8 +87,8 @@ EOF
 tmux new-session -d -s "$SESSION" -n next -c "$REPO_ROOT"
 tmux send-keys -t "$SESSION:next" "caffeinate -dimsu npm run dev" C-m
 
-tmux new-window -t "$SESSION" -n whisper -c "$BACKEND_DIR"
-tmux send-keys -t "$SESSION:whisper" \
+tmux new-window -t "$SESSION" -n backend -c "$BACKEND_DIR"
+tmux send-keys -t "$SESSION:backend" \
   "caffeinate -dimsu bash -c 'source venv/bin/activate && uvicorn main:app --host 0.0.0.0 --port 8000'" C-m
 
 tmux new-window -t "$SESSION" -n kokoro -c "$REPO_ROOT"
@@ -100,50 +100,47 @@ tmux new-window -t "$SESSION" -n ngrok -c "$REPO_ROOT"
 tmux send-keys -t "$SESSION:ngrok" \
   "caffeinate -dimsu ngrok start --all --config \"$DEFAULT_NGROK_CONFIG\" --config $NGROK_CONFIG" C-m
 
-echo "Started tmux windows: next, whisper, kokoro, ngrok (session: $SESSION)"
+echo "Started tmux windows: next, backend, kokoro, ngrok (session: $SESSION)"
 echo "Waiting for ngrok tunnels to come up..."
 
 # --- Poll ngrok's local API for the public URLs --------------------------
-PUBLIC_NEXT="" PUBLIC_WHISPER="" PUBLIC_KOKORO=""
+PUBLIC_NEXT="" PUBLIC_BACKEND=""
 for _ in $(seq 1 30); do
   sleep 2
   JSON="$(curl -s http://localhost:4040/api/tunnels || true)"
   [ -z "$JSON" ] && continue
   PUBLIC_NEXT="$(echo "$JSON" | python3 -c "import json,sys;d=json.load(sys.stdin);print(next((t['public_url'] for t in d['tunnels'] if t['name']=='next'),''))" 2>/dev/null || true)"
-  PUBLIC_WHISPER="$(echo "$JSON" | python3 -c "import json,sys;d=json.load(sys.stdin);print(next((t['public_url'] for t in d['tunnels'] if t['name']=='whisper'),''))" 2>/dev/null || true)"
-  PUBLIC_KOKORO="$(echo "$JSON" | python3 -c "import json,sys;d=json.load(sys.stdin);print(next((t['public_url'] for t in d['tunnels'] if t['name']=='kokoro'),''))" 2>/dev/null || true)"
-  [ -n "$PUBLIC_NEXT" ] && [ -n "$PUBLIC_WHISPER" ] && [ -n "$PUBLIC_KOKORO" ] && break
+  PUBLIC_BACKEND="$(echo "$JSON" | python3 -c "import json,sys;d=json.load(sys.stdin);print(next((t['public_url'] for t in d['tunnels'] if t['name']=='backend'),''))" 2>/dev/null || true)"
+  [ -n "$PUBLIC_NEXT" ] && [ -n "$PUBLIC_BACKEND" ] && break
 done
 
-if [ -z "$PUBLIC_WHISPER" ] || [ -z "$PUBLIC_KOKORO" ]; then
+if [ -z "$PUBLIC_BACKEND" ]; then
   echo "Warning: not all ngrok tunnels came up in time. Check: tmux attach -t $SESSION -w ngrok" >&2
 else
   echo "ngrok tunnels:"
   echo "  next:    $PUBLIC_NEXT"
-  echo "  whisper: $PUBLIC_WHISPER"
-  echo "  kokoro:  $PUBLIC_KOKORO"
+  echo "  backend: $PUBLIC_BACKEND"
 
-  # Rewrite .env.local with fresh URLs, preserving any other lines (e.g. DATABASE_URL).
+  # Rewrite .env.local with the fresh backend URL, preserving any other lines.
   TMP_ENV="$(mktemp)"
-  grep -v "^NEXT_PUBLIC_WHISPER_SERVICE_URL=\|^NEXT_PUBLIC_KOKORO_SERVICE_URL=" "$ENV_LOCAL" 2>/dev/null > "$TMP_ENV" || true
+  grep -v "^NEXT_PUBLIC_BACKEND_URL=" "$ENV_LOCAL" 2>/dev/null > "$TMP_ENV" || true
   {
-    echo "NEXT_PUBLIC_WHISPER_SERVICE_URL=$PUBLIC_WHISPER"
-    echo "NEXT_PUBLIC_KOKORO_SERVICE_URL=$PUBLIC_KOKORO"
+    echo "NEXT_PUBLIC_BACKEND_URL=$PUBLIC_BACKEND"
     cat "$TMP_ENV"
   } > "$ENV_LOCAL"
   rm -f "$TMP_ENV"
-  echo "Updated $ENV_LOCAL with fresh tunnel URLs."
+  echo "Updated $ENV_LOCAL with fresh tunnel URL."
 
   # NEXT_PUBLIC_* is inlined at build/dev-server-start time, so restart the
-  # next window for the new URLs to take effect.
+  # next window for the new URL to take effect.
   tmux send-keys -t "$SESSION:next" C-c
   sleep 1
   tmux send-keys -t "$SESSION:next" "caffeinate -dimsu npm run dev" C-m
-  echo "Restarted Next.js dev server to pick up new env vars."
+  echo "Restarted Next.js dev server to pick up new env var."
 fi
 
 echo ""
-echo "All set. Windows: next, whisper, kokoro, ngrok"
+echo "All set. Windows: next, backend, kokoro, ngrok"
 echo "  Attach:  tmux attach -t $SESSION"
 echo "  Jump to a window inside tmux: Ctrl-b then window number, or Ctrl-b w to pick"
 echo "  Stop everything: ./scripts/dev-down.sh"

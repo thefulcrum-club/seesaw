@@ -2,10 +2,10 @@
 import { describe, it, expect } from "vitest";
 import { synthesizeSpeech } from "./kokoroClient";
 
-async function kokoroServiceReachable(): Promise<boolean> {
+async function backendReachable(): Promise<boolean> {
   try {
     const res = await fetch(
-      `${process.env.KOKORO_SERVICE_URL ?? "http://localhost:8880"}/health`
+      `${process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000"}/health`
     );
     return res.ok;
   } catch {
@@ -13,11 +13,11 @@ async function kokoroServiceReachable(): Promise<boolean> {
   }
 }
 
-describe("synthesizeSpeech (live kokoro-service)", () => {
+describe("synthesizeSpeech (live seesaw-backend)", () => {
   it("returns non-empty audio for given text", async () => {
-    const reachable = await kokoroServiceReachable();
+    const reachable = await backendReachable();
     if (!reachable) {
-      console.warn("kokoro-service not reachable at localhost:8880, skipping");
+      console.warn("seesaw-backend not reachable at localhost:8000, skipping");
       return;
     }
 
@@ -29,7 +29,7 @@ describe("synthesizeSpeech (live kokoro-service)", () => {
     const originalFetch = global.fetch;
     global.fetch = async () => new Response(null, { status: 500 });
     try {
-      await expect(synthesizeSpeech("test")).rejects.toThrow("Kokoro service returned 500");
+      await expect(synthesizeSpeech("test")).rejects.toThrow("Backend TTS request failed: 500");
     } finally {
       global.fetch = originalFetch;
     }

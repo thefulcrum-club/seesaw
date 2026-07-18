@@ -5,7 +5,8 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { ReportView } from "@/components/Report/ReportView";
-import type { SessionDetail } from "@/app/api/sessions/[id]/route";
+import { backendUrl } from "@/lib/backend";
+import type { SessionDetail } from "@/lib/types";
 
 export default function SessionDetailPage() {
   const router = useRouter();
@@ -14,7 +15,7 @@ export default function SessionDetailPage() {
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    fetch(`/api/sessions/${params.id}`)
+    fetch(backendUrl(`/sessions/${params.id}`))
       .then((res) => {
         if (!res.ok) throw new Error("not found");
         return res.json();

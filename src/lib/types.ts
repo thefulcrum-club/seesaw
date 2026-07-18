@@ -93,3 +93,25 @@ export type MarketResearchReport = {
 export type MarketResearchReportResponse = MarketResearchReport & {
   sessionId: string | null;
 };
+
+export type IdeateMessage = { role: "user" | "assistant"; content: string };
+
+export type SessionSummary = {
+  id: string;
+  ideaName: string;
+  industry: string;
+  targetMarket: string;
+  createdAt: string;
+  verdict: MarketResearchReport["verdict"]["rating"] | null;
+};
+
+export type SessionDetail = {
+  id: string;
+  ideaName: string;
+  description: string;
+  industry: string;
+  targetMarket: string;
+  createdAt: string;
+  report: MarketResearchReport;
+  ideateMessages: IdeateMessage[];
+};

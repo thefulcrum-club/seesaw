@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { MarketResearchReport } from "@/lib/types";
+import type { MarketResearchReport, IdeateMessage } from "@/lib/types";
 import { VerdictGauge } from "./VerdictGauge";
 import { TamSamSomChart } from "./TamSamSomChart";
 import { SwotQuadrant } from "./SwotQuadrant";
@@ -12,7 +12,6 @@ import { SourcesList } from "./SourcesList";
 import { IdeateChat } from "./IdeateChat";
 import { DownloadPdfButton } from "../DownloadPdfButton";
 import { fireConfetti } from "@/lib/confetti";
-import type { IdeateMessage } from "@/app/api/ideate/route";
 
 type Tab = "overview" | "market" | "swot" | "competitors" | "pmf-sources" | "ideate";
 

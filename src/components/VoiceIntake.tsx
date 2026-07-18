@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { backendUrl } from "@/lib/backend";
 import type { ResearchState, VoiceExchange } from "@/lib/types";
 import { transcribeAudio } from "@/lib/whisperClient";
 import { synthesizeSpeech } from "@/lib/kokoroClient";
@@ -62,7 +63,7 @@ export function VoiceIntake({
     setPhase("loading-question");
     setError(null);
     try {
-      const res = await fetch("/api/voice-question", {
+      const res = await fetch(backendUrl("/voice-question"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
