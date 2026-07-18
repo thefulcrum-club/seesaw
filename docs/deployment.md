@@ -1,19 +1,25 @@
 # Deployment
 
-seesaw deploys as three pieces, all built from this one GitHub repo
-(`thefulcrum-club/seesaw`):
+seesaw deploys as three pieces, built from **two GitHub repos**:
 
-| Piece                      | Host     | What it serves                                   |
-| --------------------------- | -------- | ------------------------------------------------- |
-| Frontend (Next.js)          | Vercel   | The seesaw UI — no secrets, calls the backend over HTTPS |
-| Backend (`whisper-service`) | Render   | FastAPI: Gemini pipeline, sessions, transcribe, TTS proxy |
-| Kokoro (TTS)                 | Render   | Third-party container, private — only the backend can reach it |
-| Database                    | Supabase | Postgres, holds `Session`/`VoiceExchange`/`Report`/`IdeateMessage` |
+| Piece                      | Repo                                | Host     | What it serves                                   |
+| --------------------------- | ------------------------------------ | -------- | ------------------------------------------------- |
+| Frontend (Next.js)          | `thefulcrum-club/seesaw` (public)    | Vercel   | The seesaw UI — no secrets, calls the backend over HTTPS |
+| Backend                     | `thefulcrum-club/seesaw-backend` (private) | Render   | FastAPI: Gemini pipeline, sessions, transcribe, TTS proxy |
+| Kokoro (TTS)                 | —  (third-party image)                | Render   | Container, private — only the backend can reach it |
+| Database                    | —                                     | Supabase | Postgres, holds `Session`/`VoiceExchange`/`Report`/`IdeateMessage` |
+
+The repos are split because `seesaw` needs to be **public** for Vercel's
+free-tier hosting, while the backend holds secrets (`GEMINI_API_KEY`,
+`DATABASE_URL`) and stays **private** in `seesaw-backend`. `whisper-service/`
+no longer exists inside `seesaw` — that code moved to `seesaw-backend`'s
+repo root (see git history in `seesaw` up to the split commit if you need
+the old in-repo history).
 
 This doc assumes the [Python backend rewrite](superpowers/specs/2026-07-18-python-backend-rewrite-design.md)
-is implemented — i.e. `whisper-service` exposes `/research`, `/ideate`,
-`/sessions`, `/voice-question`, `/transcribe`, `/tts`, and the Next.js app
-holds no `GEMINI_API_KEY` or database credentials.
+is implemented against `seesaw-backend` — i.e. it exposes `/research`,
+`/ideate`, `/sessions`, `/voice-question`, `/transcribe`, `/tts`, and the
+Next.js app holds no `GEMINI_API_KEY` or database credentials.
 
 Deploy order matters: **Supabase → Render → Vercel**, since Render needs the
 database URL and Vercel needs the backend URL.
@@ -41,17 +47,18 @@ database URL and Vercel needs the backend URL.
 
 Render supports deploying from a `render.yaml` blueprint checked into the
 repo, so both services are declared as code instead of clicked through the
-dashboard.
+dashboard. This blueprint lives in `seesaw-backend`, not `seesaw` — Render
+will be pointed at the private backend repo, not the public frontend one.
 
-Add `render.yaml` at the repo root:
+Add `render.yaml` at `seesaw-backend`'s repo root:
 
 ```yaml
 services:
   - type: web
     name: seesaw-backend
     runtime: docker
-    dockerContext: ./whisper-service
-    dockerfilePath: ./whisper-service/Dockerfile
+    dockerContext: .
+    dockerfilePath: ./Dockerfile
     plan: starter
     healthCheckPath: /health
     envVars:
@@ -93,15 +100,18 @@ Notes:
   `MIGRATIONS_DATABASE_URL` before each deploy goes live (set that as a
   separate `sync: false` var referenced by your Alembic `env.py`, so the
   pooled `DATABASE_URL` isn't used for schema changes).
-- `whisper-service/Dockerfile` needs to install both the FastAPI app's
-  Python deps and expose `PORT` per Render's convention (Render sets
-  `$PORT`; make sure `uvicorn` binds `0.0.0.0:$PORT`).
+- `seesaw-backend/Dockerfile` needs to install the FastAPI app's Python deps
+  and expose `PORT` per Render's convention (Render sets `$PORT`; make sure
+  `uvicorn` binds `0.0.0.0:$PORT`).
+- Render needs access to the private `seesaw-backend` repo — authorize the
+  Render GitHub App for `thefulcrum-club` (or at minimum for this repo) when
+  prompted during blueprint setup.
 
 To deploy:
 
-1. Push `render.yaml` to the repo.
+1. Push `render.yaml` to `seesaw-backend`.
 2. In the Render dashboard: **New → Blueprint**, pick the
-   `thefulcrum-club/seesaw` repo, branch `master`.
+   `thefulcrum-club/seesaw-backend` repo, branch `master`.
 3. Render detects `render.yaml` and provisions both services. Fill in the
    `sync: false` secrets (`DATABASE_URL` from Supabase, `GEMINI_API_KEY`,
    `GOOGLE_CLOUD_PROJECT` if using Vertex AI mode) when prompted.
@@ -113,10 +123,11 @@ To deploy:
 ## 3. Vercel (frontend)
 
 1. [vercel.com/new](https://vercel.com/new) → import
-   `thefulcrum-club/seesaw` → framework preset **Next.js** (auto-detected).
-2. Root directory: repo root (the Next.js app lives at the top level, not
-   in a subfolder — `whisper-service/` is excluded automatically since it
-   has no `package.json` Vercel would try to build).
+   `thefulcrum-club/seesaw` (public repo — Vercel's free tier requires this)
+   → framework preset **Next.js** (auto-detected).
+2. Root directory: repo root (the Next.js app lives at the top level; the
+   backend lives entirely in the separate `seesaw-backend` repo, so there's
+   nothing to exclude).
 3. Set environment variables (**Project Settings → Environment Variables**):
    - `NEXT_PUBLIC_BACKEND_URL` — the Render backend URL from step 2.4.
    - Remove/omit `GEMINI_API_KEY`, `DATABASE_URL`,
@@ -143,7 +154,15 @@ To deploy:
 3. Check `/sessions` on the Vercel app lists that run, confirming Supabase
    reads work too.
 
-## Local dev is unaffected
+## Local dev
+
+Clone `seesaw-backend` as a sibling of `seesaw` (both under the same parent
+folder) — `scripts/dev-up.sh` expects it at `../seesaw-backend` by default,
+overridable via `BACKEND_DIR`:
+
+```bash
+git clone https://github.com/thefulcrum-club/seesaw-backend.git ../seesaw-backend
+```
 
 `scripts/dev-up.sh` continues to run everything locally against SQLite —
 this deployment setup only applies to the hosted environments. Point

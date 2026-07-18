@@ -2,8 +2,9 @@
 # scripts/dev-up.sh
 #
 # Starts the full local dev stack for fulcrum:
-#   - Next.js app          (:3000)
-#   - whisper-service       (:8000)  — python venv + uvicorn
+#   - Next.js app          (:3000)  — this repo (thefulcrum-club/seesaw)
+#   - seesaw-backend        (:8000)  — python venv + uvicorn, sibling repo
+#                                       (thefulcrum-club/seesaw-backend)
 #   - kokoro-fastapi        (:8880)  — docker
 #   - ngrok tunnels for all three (named tunnels, one agent)
 #
@@ -27,11 +28,22 @@ NGROK_CONFIG="$REPO_ROOT/scripts/ngrok.yml"
 NGROK_LOG="/tmp/fulcrum-ngrok.log"
 ENV_LOCAL="$REPO_ROOT/.env.local"
 
+# seesaw-backend (formerly whisper-service/) now lives in its own private
+# repo, checked out as a sibling directory by default. Override with
+# BACKEND_DIR=/path/to/seesaw-backend if you clone it elsewhere.
+BACKEND_DIR="${BACKEND_DIR:-$REPO_ROOT/../seesaw-backend}"
+
 cd "$REPO_ROOT"
 
 command -v tmux >/dev/null || { echo "tmux not found. Install with: brew install tmux" >&2; exit 1; }
 command -v ngrok >/dev/null || { echo "ngrok not found. Install with: brew install ngrok" >&2; exit 1; }
 command -v caffeinate >/dev/null || { echo "caffeinate not found (should ship with macOS)." >&2; exit 1; }
+[ -d "$BACKEND_DIR" ] || {
+  echo "seesaw-backend not found at $BACKEND_DIR" >&2
+  echo "Clone it: git clone https://github.com/thefulcrum-club/seesaw-backend.git $BACKEND_DIR" >&2
+  echo "(or set BACKEND_DIR to point at your checkout)" >&2
+  exit 1
+}
 
 if tmux has-session -t "$SESSION" 2>/dev/null; then
   echo "tmux session '$SESSION' already running. Attach with: tmux attach -t $SESSION"
@@ -75,7 +87,7 @@ EOF
 tmux new-session -d -s "$SESSION" -n next -c "$REPO_ROOT"
 tmux send-keys -t "$SESSION:next" "caffeinate -dimsu npm run dev" C-m
 
-tmux new-window -t "$SESSION" -n whisper -c "$REPO_ROOT/whisper-service"
+tmux new-window -t "$SESSION" -n whisper -c "$BACKEND_DIR"
 tmux send-keys -t "$SESSION:whisper" \
   "caffeinate -dimsu bash -c 'source venv/bin/activate && uvicorn main:app --host 0.0.0.0 --port 8000'" C-m
 

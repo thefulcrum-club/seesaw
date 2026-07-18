@@ -8,12 +8,20 @@ into `whisper-service`, turning it into the single backend for seesaw
 and no database credentials — every request that needs `GEMINI_API_KEY` or
 `DATABASE_URL` goes to this backend over HTTPS instead.
 
+`whisper-service`'s code now lives at the root of its own private repo,
+[`thefulcrum-club/seesaw-backend`](https://github.com/thefulcrum-club/seesaw-backend),
+split out of `seesaw` so the frontend repo can be public (required for
+Vercel's free tier) while the backend — which will hold real secrets —
+stays private. Everywhere below, `whisper-service/<path>` means
+`<path>` at the root of the `seesaw-backend` repo.
+
 This is the first of several sub-projects needed to deploy seesaw to
-Supabase (Postgres) + Render (backend) + Vercel (frontend), all from the
-same GitHub repo. This spec covers only the backend rewrite. Database
-migration details (Postgres schema, Alembic setup specifics) and deployment
-wiring (Render/Vercel/Supabase configuration) are separate concerns — this
-spec fixes the target shape both depend on.
+Supabase (Postgres) + Render (backend) + Vercel (frontend), across
+`seesaw` (frontend, public) and `seesaw-backend` (backend, private). This
+spec covers only the backend rewrite. Database migration details (Postgres
+schema, Alembic setup specifics) and deployment wiring
+(Render/Vercel/Supabase configuration) are separate concerns — this spec
+fixes the target shape both depend on.
 
 ## Current state
 
