@@ -14,11 +14,13 @@ const STARTER_PROMPTS = [
 export function IdeateChat({
   report,
   sessionId,
+  initialMessages = [],
 }: {
   report: MarketResearchReport;
   sessionId: string | null;
+  initialMessages?: IdeateMessage[];
 }) {
-  const [messages, setMessages] = useState<IdeateMessage[]>([]);
+  const [messages, setMessages] = useState<IdeateMessage[]>(initialMessages);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);

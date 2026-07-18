@@ -2,6 +2,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { IdeaForm } from "@/components/IdeaForm";
 import { VoiceIntake } from "@/components/VoiceIntake";
 import { TextIntake } from "@/components/TextIntake";
@@ -93,9 +94,17 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-full">
       <main className="flex-1 p-8">
-        <h1 className="text-4xl text-center mb-10 font-serif italic">
+        <h1 className="text-4xl text-center mb-4 font-serif italic">
           <Wordmark /> market research
         </h1>
+        <p className="text-center mb-10">
+          <Link
+            href="/sessions"
+            className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground hover:text-brand transition-colors"
+          >
+            View past research →
+          </Link>
+        </p>
 
         {step === "form" && <IdeaForm onSubmit={handleFormSubmit} />}
 

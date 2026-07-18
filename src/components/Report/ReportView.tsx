@@ -12,6 +12,7 @@ import { SourcesList } from "./SourcesList";
 import { IdeateChat } from "./IdeateChat";
 import { DownloadPdfButton } from "../DownloadPdfButton";
 import { fireConfetti } from "@/lib/confetti";
+import type { IdeateMessage } from "@/app/api/ideate/route";
 
 type Tab = "overview" | "market" | "swot" | "competitors" | "pmf-sources" | "ideate";
 
@@ -73,10 +74,12 @@ function StatBlock({
 export function ReportView({
   report,
   sessionId,
+  initialIdeateMessages,
   onNewResearch,
 }: {
   report: MarketResearchReport;
   sessionId: string | null;
+  initialIdeateMessages?: IdeateMessage[];
   onNewResearch: () => void;
 }) {
   const [activeTab, setActiveTab] = useState<Tab>("overview");
@@ -196,7 +199,11 @@ export function ReportView({
       )}
 
       {activeTab === "ideate" && (
-        <IdeateChat report={report} sessionId={sessionId} />
+        <IdeateChat
+          report={report}
+          sessionId={sessionId}
+          initialMessages={initialIdeateMessages}
+        />
       )}
 
       <div className="text-center">
