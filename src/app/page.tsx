@@ -7,6 +7,7 @@ import { IdeaForm } from "@/components/IdeaForm";
 import { VoiceIntake } from "@/components/VoiceIntake";
 import { TextIntake } from "@/components/TextIntake";
 import { ReportView } from "@/components/Report/ReportView";
+import { PipelineProgress } from "@/components/PipelineProgress";
 import { backendUrl } from "@/lib/backend";
 import type {
   IdeaFormInput,
@@ -230,11 +231,7 @@ export default function Home() {
           />
         )}
 
-        {step === "pipeline" && (
-          <p className="text-center font-serif italic text-lg text-muted-foreground">
-            Researching your idea — this can take a few minutes...
-          </p>
-        )}
+        {step === "pipeline" && <PipelineProgress />}
 
         {step === "error" && (
           <div className="max-w-xl mx-auto text-center space-y-4">
