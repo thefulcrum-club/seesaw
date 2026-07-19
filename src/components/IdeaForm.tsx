@@ -105,7 +105,9 @@ export function IdeaForm({
         {STEPS.map((s, i) => (
           <div
             key={s.key}
-            className="h-1.5 rounded-full transition-all duration-500 ease-out"
+            className={`h-1.5 rounded-full transition-all duration-500 ease-out ${
+              i === stepIndex ? "animate-dot-pop" : ""
+            }`}
             style={{
               width: i === stepIndex ? "2rem" : "0.5rem",
               backgroundColor: i <= stepIndex ? "var(--brand)" : "var(--border)",
@@ -170,7 +172,7 @@ export function IdeaForm({
         )}
 
         {error && (
-          <p className="text-rose-400 text-sm text-center mt-4 font-mono uppercase tracking-wider">
+          <p className="animate-shake-in text-rose-400 text-sm text-center mt-4 font-mono uppercase tracking-wider">
             {error}
           </p>
         )}

@@ -44,10 +44,17 @@ export function VerdictGauge({
         >
           <line x1="100" y1="100" x2="100" y2="30" stroke="var(--brand)" strokeWidth="4" strokeLinecap="round" />
         </g>
-        <circle cx="100" cy="100" r="8" fill="var(--brand)" />
+        <circle cx="100" cy="100" r="8" fill="var(--brand)" className="animate-pivot-pop" />
       </svg>
-      <p className="font-serif text-xl italic mt-2 text-foreground">{RATING_LABEL[verdict.rating]}</p>
-      <p className="text-muted-foreground mt-2 max-w-md mx-auto text-sm leading-relaxed">{verdict.reasoning}</p>
+      <p className="animate-settle-in font-serif text-xl italic mt-2 text-foreground" style={{ animationDelay: "0.95s" }}>
+        {RATING_LABEL[verdict.rating]}
+      </p>
+      <p
+        className="animate-settle-in text-muted-foreground mt-2 max-w-md mx-auto text-sm leading-relaxed"
+        style={{ animationDelay: "1.05s" }}
+      >
+        {verdict.reasoning}
+      </p>
     </div>
   );
 }

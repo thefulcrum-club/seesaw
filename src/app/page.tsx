@@ -9,6 +9,9 @@ import { TextIntake } from "@/components/TextIntake";
 import { ReportView } from "@/components/Report/ReportView";
 import { PipelineProgress } from "@/components/PipelineProgress";
 import { SeesawAnimation } from "@/components/SeesawAnimation";
+import { AboutSection } from "@/components/AboutSection";
+import { PipelineStagesSection } from "@/components/PipelineStagesSection";
+import { ClosingCta } from "@/components/ClosingCta";
 import { backendUrl } from "@/lib/backend";
 import type {
   IdeaFormInput,
@@ -20,7 +23,7 @@ import type {
 
 type Step =
   | "landing"
-  | "seesaw"
+  | "transition"
   | "form"
   | "intake-choice"
   | "voice"
@@ -37,20 +40,10 @@ function Wordmark() {
   );
 }
 
-function Landing({
-  onStart,
-  leaving,
-}: {
-  onStart: () => void;
-  leaving: boolean;
-}) {
+function Landing({ onStart }: { onStart: () => void }) {
   return (
-    <div
-      className={`flex min-h-[80vh] flex-col items-center justify-center text-center px-6 ${
-        leaving ? "animate-hero-out" : "animate-step-in"
-      }`}
-    >
-      <div className="mb-8 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.32em] text-muted-foreground">
+    <div className="flex min-h-[80vh] flex-col items-center justify-center text-center px-6">
+      <div className="animate-rise-in delay-1 mb-8 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.32em] text-muted-foreground">
         <span
           className="inline-block h-1.5 w-1.5 rounded-full"
           style={{ backgroundColor: "var(--brand)", animation: "pulse-dot 2s ease-in-out infinite" }}
@@ -59,28 +52,28 @@ function Landing({
       </div>
 
       <h1 className="font-serif leading-[0.92] tracking-tight text-balance">
-        <span className="block text-[clamp(1.5rem,4vw,2.75rem)] font-medium">
+        <span className="animate-rise-in delay-2 block text-[clamp(1.5rem,4vw,2.75rem)] font-medium">
           market simulation, before you build.
         </span>
-        <span className="block text-[clamp(4rem,14vw,11rem)] italic mt-2">
+        <span className="animate-rise-in delay-3 block text-[clamp(4rem,14vw,11rem)] italic mt-2">
           <Wordmark />
         </span>
       </h1>
 
-      <p className="mt-8 max-w-xl font-serif text-lg leading-relaxed text-muted-foreground md:text-xl">
+      <p className="animate-rise-in delay-4 mt-8 max-w-xl font-serif text-lg leading-relaxed text-muted-foreground md:text-xl">
         Seesaw stress-tests your idea — market size, competitors, PMF signal, and a
         straight verdict — before you spend six figures finding out the hard way.
       </p>
 
       <button
         onClick={onStart}
-        className="mt-12 inline-flex items-center gap-2 rounded-full px-8 py-4 font-mono text-[12px] uppercase tracking-[0.22em] text-white transition-transform hover:-translate-y-0.5"
+        className="animate-rise-in delay-5 mt-12 inline-flex items-center gap-2 rounded-full px-8 py-4 font-mono text-[12px] uppercase tracking-[0.22em] text-white transition-transform hover:-translate-y-0.5"
         style={{ backgroundColor: "var(--brand)", boxShadow: "0 20px 60px -15px var(--brand)" }}
       >
         Simulate your idea <span>→</span>
       </button>
 
-      <p className="mt-8 font-mono text-[10px] uppercase tracking-[0.28em] text-muted-foreground">
+      <p className="animate-rise-in delay-5 mt-8 font-mono text-[10px] uppercase tracking-[0.28em] text-muted-foreground">
         by fulcrum.
       </p>
     </div>
@@ -109,21 +102,30 @@ function Footer() {
 
 export default function Home() {
   const [step, setStep] = useState<Step>("landing");
-  const [leavingLanding, setLeavingLanding] = useState(false);
   const [researchState, setResearchState] = useState<ResearchState | null>(null);
   const [report, setReport] = useState<MarketResearchReport | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   function handleStart() {
-    setLeavingLanding(true);
-    setTimeout(() => {
-      setStep("seesaw");
-      setLeavingLanding(false);
-    }, 380);
+    const alreadyAtTop = window.scrollY < 4;
+    if (alreadyAtTop) {
+      setStep("transition");
+      return;
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    const onScrollEnd = () => {
+      window.removeEventListener("scrollend", onScrollEnd);
+      setStep("transition");
+    };
+    if ("onscrollend" in window) {
+      window.addEventListener("scrollend", onScrollEnd, { once: true });
+    } else {
+      setTimeout(() => setStep("transition"), 600);
+    }
   }
 
-  function handleSeesawDone() {
+  function handleTransitionDone() {
     setStep("form");
   }
 
@@ -169,19 +171,25 @@ export default function Home() {
   if (step === "landing") {
     return (
       <div className="flex flex-col min-h-full">
-        <main className="flex-1 flex items-center justify-center p-8">
-          <Landing onStart={handleStart} leaving={leavingLanding} />
+        <main className="flex-1">
+          <div className="flex items-center justify-center p-8">
+            <Landing onStart={handleStart} />
+          </div>
+
+          <AboutSection />
+          <PipelineStagesSection />
+          <ClosingCta onStart={handleStart} />
         </main>
         <Footer />
       </div>
     );
   }
 
-  if (step === "seesaw") {
+  if (step === "transition") {
     return (
       <div className="flex flex-col min-h-full">
         <main className="flex-1 flex items-center justify-center p-8">
-          <SeesawAnimation onDone={handleSeesawDone} />
+          <SeesawAnimation onDone={handleTransitionDone} />
         </main>
         <Footer />
       </div>
