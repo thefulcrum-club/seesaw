@@ -1,0 +1,17 @@
+# seesaw
+
+> seesaw is a market-research simulation tool by fulcrum. that stress-tests a startup idea before you build it. Describe the idea, answer a few follow-up questions by voice or text, and a research pipeline sizes the market, scouts competitors, reads real sentiment, checks feasibility, models the economics, and returns a straight red/amber/green verdict with reasoning shown.
+
+seesaw is not a generic AI chatbot or a business-plan generator. It runs a fixed six-stage research pipeline (market sizing, competitor scouting, sentiment/PMF reading, feasibility check, unit economics, verdict synthesis) against a specific idea and produces one structured report per session. It is built by [fulcrum.](https://thefulcrum.club), a strategic consulting agency for founders, as the functional proof of the same diagnostic engine fulcrum. runs for consulting clients.
+
+## Core pages
+
+- [Home](https://seesaw.thefulcrum.club/): what seesaw does, the research pipeline, and the idea-intake form.
+
+## Notes for crawlers
+
+- `/sessions` and `/sessions/[id]` contain user-submitted business ideas and research reports and are intentionally excluded from indexing (see `/robots.txt`).
+
+## Related
+
+- [fulcrum.](https://thefulcrum.club): the parent consultancy — seesaw's engine is the same one fulcrum. uses for client audits and ongoing engagements.
