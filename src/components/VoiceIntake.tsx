@@ -78,6 +78,7 @@ export function VoiceIntake({
   onComplete: (exchanges: VoiceExchange[]) => void;
 }) {
   const [exchanges, setExchanges] = useState<VoiceExchange[]>([]);
+  const exchangesRef = useRef<VoiceExchange[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState<string | null>(null);
   const [phase, setPhase] = useState<Phase>("loading-question");
   const [error, setError] = useState<string | null>(null);
@@ -296,9 +297,10 @@ export function VoiceIntake({
         const blob = new Blob(chunksRef.current, { type: "audio/webm" });
         const text = await transcribeAudio(blob);
         const newExchanges = [
-          ...exchanges,
+          ...exchangesRef.current,
           { question, answerTranscript: text },
         ];
+        exchangesRef.current = newExchanges;
         setExchanges(newExchanges);
         await fetchNextQuestion(newExchanges);
       } catch {
