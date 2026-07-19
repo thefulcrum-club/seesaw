@@ -13,9 +13,68 @@ const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
 });
 
+const SITE_URL = "https://seesaw.thefulcrum.club";
+const SITE_TITLE = "seesaw by fulcrum. — Market Simulation for Founders";
+const SITE_DESCRIPTION =
+  "Seesaw stress-tests your startup idea before you build it — market size, competitors, PMF signal, and a straight red, amber, or green verdict, powered by fulcrum.'s research pipeline.";
+
 export const metadata: Metadata = {
-  title: "seesaw by fulcrum. — Market Simulation for Founders",
-  description: "AI-powered market research reports for founders",
+  metadataBase: new URL(SITE_URL),
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
+  keywords: [
+    "market research simulation",
+    "startup idea validation",
+    "market sizing",
+    "competitor analysis",
+    "product market fit",
+    "seesaw",
+    "fulcrum",
+  ],
+  applicationName: "seesaw",
+  creator: "fulcrum.",
+  publisher: "fulcrum.",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    url: SITE_URL,
+    siteName: "seesaw by fulcrum.",
+    type: "website",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+};
+
+const webApplicationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: "seesaw",
+  applicationCategory: "BusinessApplication",
+  url: SITE_URL,
+  description: SITE_DESCRIPTION,
+  operatingSystem: "Any",
+  publisher: {
+    "@type": "Organization",
+    name: "fulcrum.",
+    url: "https://thefulcrum.club",
+  },
 };
 
 export default function RootLayout({
@@ -29,6 +88,10 @@ export default function RootLayout({
       className={`${playfair.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col relative overflow-x-hidden">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(webApplicationJsonLd) }}
+        />
         <div
           aria-hidden="true"
           className="pointer-events-none fixed inset-0 overflow-hidden -z-10"
