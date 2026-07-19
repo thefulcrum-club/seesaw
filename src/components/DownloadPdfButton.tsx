@@ -10,13 +10,38 @@ import {
   StyleSheet,
   pdf,
   Font,
+  Link,
 } from "@react-pdf/renderer";
 import type { MarketResearchReport } from "@/lib/types";
 
 const BRAND = "#1612d3";
+const BRAND_LIGHT = "#6187ec";
+const PURPLE = "#a855f7";
 const INK = "#1a1a1a";
 const MUTED = "#6b6b6b";
 const BORDER = "#e6e6e6";
+const CARD = "#fafafa";
+
+const VERDICT_COLORS: Record<MarketResearchReport["verdict"]["rating"], { bg: string; text: string; label: string }> = {
+  red: { bg: "#fdecec", text: "#b42318", label: "Red — high risk" },
+  amber: { bg: "#fdf3e0", text: "#93650a", label: "Amber — mixed signals" },
+  green: { bg: "#e9f7ef", text: "#1c7a4a", label: "Green — strong signal" },
+};
+
+const SWOT_QUADRANTS: {
+  key: keyof MarketResearchReport["swot"];
+  title: string;
+  color: string;
+}[] = [
+  { key: "strengths", title: "Strengths", color: "#1c9d6f" },
+  { key: "weaknesses", title: "Weaknesses", color: "#e0466a" },
+  { key: "opportunities", title: "Opportunities", color: BRAND_LIGHT },
+  { key: "threats", title: "Threats", color: "#c98a12" },
+];
+
+function isInsufficient(value: string) {
+  return value.toLowerCase().startsWith("insufficient data");
+}
 
 Font.register({
   family: "Playfair Display",
@@ -66,15 +91,12 @@ const styles = StyleSheet.create({
   tagline: { fontSize: 8, fontFamily: "JetBrains Mono", color: MUTED, textTransform: "uppercase", letterSpacing: 1 },
   verdictBox: {
     marginBottom: 18,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: BRAND,
-    borderRadius: 6,
+    padding: 14,
+    borderRadius: 8,
   },
   verdictLabel: {
     fontSize: 8,
     fontFamily: "JetBrains Mono",
-    color: BRAND,
     textTransform: "uppercase",
     letterSpacing: 1.5,
     marginBottom: 4,
@@ -86,8 +108,8 @@ const styles = StyleSheet.create({
     color: BRAND,
     textTransform: "uppercase",
     letterSpacing: 1.5,
-    marginTop: 16,
-    marginBottom: 8,
+    marginTop: 18,
+    marginBottom: 10,
     borderTopWidth: 1,
     borderTopColor: BORDER,
     paddingTop: 10,
@@ -99,21 +121,50 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     letterSpacing: 1,
     marginBottom: 3,
-    marginTop: 6,
+    marginTop: 8,
   },
   bulletRow: { flexDirection: "row", marginBottom: 3 },
   bulletDot: { width: 10, fontSize: 10, color: BRAND },
   bulletText: { flex: 1, lineHeight: 1.4 },
-  competitorRow: { marginBottom: 8 },
-  competitorName: { fontStyle: "italic", fontSize: 11, marginBottom: 2 },
-  competitorMeta: { fontSize: 9.5, color: MUTED, lineHeight: 1.4 },
+  card: {
+    borderWidth: 1,
+    borderColor: BORDER,
+    borderRadius: 8,
+    padding: 12,
+    backgroundColor: CARD,
+    marginBottom: 10,
+  },
+  competitorName: { fontStyle: "italic", fontSize: 11.5, marginBottom: 3, color: INK },
+  competitorMeta: { fontSize: 9.5, color: MUTED, lineHeight: 1.45 },
+  competitorMetaLabel: { fontFamily: "JetBrains Mono", fontSize: 7.5, textTransform: "uppercase", letterSpacing: 0.8, color: MUTED },
+  barRow: { marginBottom: 12 },
+  barLabelRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 },
+  barTrack: { height: 10, backgroundColor: "#eef0fa", borderRadius: 5, overflow: "hidden" },
+  barFill: { height: "100%", borderRadius: 5 },
+  swotGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  swotCard: {
+    width: "48%",
+    borderWidth: 1,
+    borderColor: BORDER,
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 8,
+  },
+  swotTitle: { fontFamily: "JetBrains Mono", fontSize: 8, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 },
+  sourceRow: { flexDirection: "row", marginBottom: 4 },
+  sourceDot: { width: 10, fontSize: 10, color: BRAND },
+  sourceLink: { flex: 1, fontSize: 9.5, color: BRAND, textDecoration: "none" },
 });
 
 function Bullets({ items }: { items: string[] }) {
+  const filtered = items.filter((item) => item.trim().length > 0);
+  if (filtered.length === 0) {
+    return <Text style={[styles.bulletText, { color: MUTED, fontStyle: "italic" }]}>Insufficient data.</Text>;
+  }
   return (
     <>
-      {items.map((item, i) => (
-        <View key={i} style={styles.bulletRow}>
+      {filtered.map((item, i) => (
+        <View key={i} style={styles.bulletRow} wrap={false}>
           <Text style={styles.bulletDot}>•</Text>
           <Text style={styles.bulletText}>{item}</Text>
         </View>
@@ -122,11 +173,63 @@ function Bullets({ items }: { items: string[] }) {
   );
 }
 
+function TamSamSomBars({ tamSamSom }: { tamSamSom: MarketResearchReport["tam_sam_som"] }) {
+  const bars: { key: "tam" | "sam" | "som"; label: string; width: number; color: string }[] = [
+    { key: "tam", label: "TAM", width: 100, color: BRAND_LIGHT },
+    { key: "sam", label: "SAM", width: 65, color: BRAND },
+    { key: "som", label: "SOM", width: 35, color: PURPLE },
+  ];
+  return (
+    <View style={styles.card} wrap={false}>
+      {bars.map((bar) => {
+        const value = tamSamSom[bar.key];
+        const insufficient = isInsufficient(value);
+        return (
+          <View key={bar.key} style={styles.barRow}>
+            <View style={styles.barLabelRow}>
+              <Text style={[styles.competitorMetaLabel, { color: bar.color }]}>{bar.label}</Text>
+              {!insufficient && <Text style={{ fontSize: 10.5, fontStyle: "italic" }}>{value}</Text>}
+            </View>
+            <View style={styles.barTrack}>
+              {!insufficient && (
+                <View style={[styles.barFill, { width: `${bar.width}%`, backgroundColor: bar.color }]} />
+              )}
+            </View>
+            {insufficient && (
+              <Text style={{ fontSize: 8.5, color: MUTED, fontStyle: "italic", marginTop: 3 }}>{value}</Text>
+            )}
+          </View>
+        );
+      })}
+      <Text style={{ fontSize: 9, color: MUTED, lineHeight: 1.45, marginTop: 4, borderTopWidth: 1, borderTopColor: BORDER, paddingTop: 8 }}>
+        {tamSamSom.methodology}
+      </Text>
+    </View>
+  );
+}
+
+function SwotGrid({ swot }: { swot: MarketResearchReport["swot"] }) {
+  return (
+    <View style={styles.swotGrid}>
+      {SWOT_QUADRANTS.map((q) => (
+        <View key={q.key} style={styles.swotCard} wrap={false}>
+          <Text style={[styles.swotTitle, { color: q.color }]}>{q.title}</Text>
+          <Bullets items={swot[q.key]} />
+        </View>
+      ))}
+    </View>
+  );
+}
+
 function ReportPdfDocument({ report }: { report: MarketResearchReport }) {
+  const verdictColors = VERDICT_COLORS[report.verdict.rating];
+  const pros = report.pros.filter((p) => p.trim().length > 0);
+  const cons = report.cons.filter((c) => c.trim().length > 0);
+
   return (
     <Document>
-      <Page size="A4" style={styles.page}>
-        <View style={styles.brandRow}>
+      <Page size="A4" style={styles.page} wrap>
+        <View style={styles.brandRow} fixed>
           <View>
             <Text style={styles.brand}>
               seesaw<Text style={styles.brandDot}>.</Text>
@@ -136,30 +239,52 @@ function ReportPdfDocument({ report }: { report: MarketResearchReport }) {
           <Text style={styles.tagline}>Market Research Report</Text>
         </View>
 
-        <View style={styles.verdictBox}>
-          <Text style={styles.verdictLabel}>Verdict — {report.verdict.rating}</Text>
-          <Text style={styles.verdictText}>{report.verdict.reasoning}</Text>
+        <View style={[styles.verdictBox, { backgroundColor: verdictColors.bg }]} wrap={false}>
+          <Text style={[styles.verdictLabel, { color: verdictColors.text }]}>
+            Verdict — {verdictColors.label}
+          </Text>
+          <Text style={[styles.verdictText, { color: verdictColors.text }]}>{report.verdict.reasoning}</Text>
         </View>
 
         <Text style={styles.sectionTitle}>Executive Summary</Text>
         <Bullets items={report.executive_summary} />
 
         <Text style={styles.sectionTitle}>Market Size</Text>
-        <Text style={styles.bulletText}>TAM: {report.tam_sam_som.tam}</Text>
-        <Text style={styles.bulletText}>SAM: {report.tam_sam_som.sam}</Text>
-        <Text style={styles.bulletText}>SOM: {report.tam_sam_som.som}</Text>
-        <Text style={[styles.bulletText, { color: MUTED, marginTop: 4 }]}>
-          {report.tam_sam_som.methodology}
-        </Text>
+        <TamSamSomBars tamSamSom={report.tam_sam_som} />
+
+        <Text style={styles.sectionTitle}>Product-Market Fit Signal</Text>
+        <View style={styles.card} wrap={false}>
+          <Text style={{ fontSize: 9.5, color: MUTED, lineHeight: 1.45, marginBottom: 6 }}>
+            {report.pmf_signal.summary}
+          </Text>
+          {report.pmf_signal.evidence.map((e, i) => (
+            <View key={i} style={styles.bulletRow}>
+              <Text style={styles.bulletDot}>•</Text>
+              <Text style={styles.bulletText}>
+                {e.claim}
+                {e.source_url && (
+                  <>
+                    {" "}
+                    (<Link src={e.source_url} style={{ color: BRAND }}>source</Link>)
+                  </>
+                )}
+              </Text>
+            </View>
+          ))}
+        </View>
+
+        <Text style={styles.sectionTitle}>SWOT</Text>
+        <SwotGrid swot={report.swot} />
 
         <Text style={styles.sectionTitle}>Competitors</Text>
         {report.competitors.map((c) => (
-          <View key={c.name} style={styles.competitorRow}>
+          <View key={c.name} style={styles.card} wrap={false}>
             <Text style={styles.competitorName}>{c.name}</Text>
-            <Text style={styles.competitorMeta}>{c.description}</Text>
-            <Text style={styles.competitorMeta}>
-              Pricing: {c.pricing} · Positioning: {c.positioning}
-            </Text>
+            <Text style={[styles.competitorMeta, { marginBottom: 5 }]}>{c.description}</Text>
+            <Text style={styles.competitorMetaLabel}>Pricing</Text>
+            <Text style={[styles.competitorMeta, { marginBottom: 4 }]}>{c.pricing}</Text>
+            <Text style={styles.competitorMetaLabel}>Positioning</Text>
+            <Text style={styles.competitorMeta}>{c.positioning}</Text>
           </View>
         ))}
 
@@ -185,19 +310,27 @@ function ReportPdfDocument({ report }: { report: MarketResearchReport }) {
           </>
         )}
 
-        <Text style={styles.sectionTitle}>Pros</Text>
-        <Bullets items={report.pros} />
+        {pros.length > 0 && (
+          <>
+            <Text style={styles.sectionTitle}>Pros</Text>
+            <Bullets items={pros} />
+          </>
+        )}
 
-        <Text style={styles.sectionTitle}>Cons</Text>
-        <Bullets items={report.cons} />
+        {cons.length > 0 && (
+          <>
+            <Text style={styles.sectionTitle}>Cons</Text>
+            <Bullets items={cons} />
+          </>
+        )}
 
         <Text style={styles.sectionTitle}>Sources</Text>
         {report.sources.map((s) => (
-          <View key={s.url} style={styles.bulletRow}>
-            <Text style={styles.bulletDot}>•</Text>
-            <Text style={[styles.bulletText, { color: BRAND }]}>
-              {s.title} — {s.url}
-            </Text>
+          <View key={s.url} style={styles.sourceRow} wrap={false}>
+            <Text style={styles.sourceDot}>•</Text>
+            <Link src={s.url} style={styles.sourceLink}>
+              {s.title}
+            </Link>
           </View>
         ))}
       </Page>
