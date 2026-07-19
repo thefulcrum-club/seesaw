@@ -180,7 +180,7 @@ function TamSamSomBars({ tamSamSom }: { tamSamSom: MarketResearchReport["tam_sam
     { key: "som", label: "SOM", width: 35, color: PURPLE },
   ];
   return (
-    <View style={styles.card} wrap={false}>
+    <View style={styles.card}>
       {bars.map((bar) => {
         const value = tamSamSom[bar.key];
         const insufficient = isInsufficient(value);
@@ -253,12 +253,12 @@ function ReportPdfDocument({ report }: { report: MarketResearchReport }) {
         <TamSamSomBars tamSamSom={report.tam_sam_som} />
 
         <Text style={styles.sectionTitle}>Product-Market Fit Signal</Text>
-        <View style={styles.card} wrap={false}>
+        <View style={styles.card}>
           <Text style={{ fontSize: 9.5, color: MUTED, lineHeight: 1.45, marginBottom: 6 }}>
             {report.pmf_signal.summary}
           </Text>
           {report.pmf_signal.evidence.map((e, i) => (
-            <View key={i} style={styles.bulletRow}>
+            <View key={i} style={styles.bulletRow} wrap={false}>
               <Text style={styles.bulletDot}>•</Text>
               <Text style={styles.bulletText}>
                 {e.claim}
