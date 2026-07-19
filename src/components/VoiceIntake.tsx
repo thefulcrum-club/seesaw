@@ -18,7 +18,7 @@ type Phase =
 // --- Tunable constants -----------------------------------------------------
 // Amplitude (0-255, from AnalyserNode byte time-domain data deviation) above
 // which we consider the user to be actively speaking.
-const SILENCE_AMPLITUDE_THRESHOLD = 10;
+const SILENCE_AMPLITUDE_THRESHOLD = 4;
 // How long continuous silence must persist after speech has begun before we
 // auto-stop the recording and move to transcription.
 const SILENCE_HOLD_MS = 1800;
@@ -268,7 +268,14 @@ export function VoiceIntake({
     }
 
     const recorder = mediaRecorderRef.current;
-    if (!recorder || !currentQuestion) return;
+    const question = currentQuestion;
+    if (!recorder || !question) {
+      stoppingRef.current = false;
+      cleanupAudioResources();
+      setError("Something went wrong. Please retry.");
+      setPhase("get-ready");
+      return;
+    }
 
     setPhase("transcribing");
     setMicLevel(0);
@@ -290,12 +297,13 @@ export function VoiceIntake({
         const text = await transcribeAudio(blob);
         const newExchanges = [
           ...exchanges,
-          { question: currentQuestion, answerTranscript: text },
+          { question, answerTranscript: text },
         ];
         setExchanges(newExchanges);
         await fetchNextQuestion(newExchanges);
       } catch {
         setError("Transcription failed. Please retry this question.");
+        stoppingRef.current = false;
         setPhase("get-ready");
         beginGetReady();
       }
@@ -303,6 +311,8 @@ export function VoiceIntake({
 
     if (recorder.state !== "inactive") {
       recorder.stop();
+    } else {
+      recorder.onstop(new Event("stop"));
     }
   }
 
