@@ -1,6 +1,6 @@
-// src/lib/kokoroClient.test.ts
+// src/lib/ttsClient.test.ts
 import { describe, it, expect } from "vitest";
-import { synthesizeSpeech } from "./kokoroClient";
+import { synthesizeSpeech } from "./ttsClient";
 
 async function backendReachable(): Promise<boolean> {
   try {
@@ -13,7 +13,7 @@ async function backendReachable(): Promise<boolean> {
   }
 }
 
-describe("synthesizeSpeech (live seesaw-backend)", () => {
+describe("synthesizeSpeech (live seesaw-backend TTS)", () => {
   it("returns non-empty audio for given text", async () => {
     const reachable = await backendReachable();
     if (!reachable) {

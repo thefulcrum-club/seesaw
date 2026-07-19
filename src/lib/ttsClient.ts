@@ -1,4 +1,4 @@
-// src/lib/kokoroClient.ts
+// src/lib/ttsClient.ts
 import { backendUrl } from "./backend";
 
 export async function synthesizeSpeech(text: string): Promise<Blob> {
