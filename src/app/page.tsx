@@ -8,6 +8,7 @@ import { VoiceIntake } from "@/components/VoiceIntake";
 import { TextIntake } from "@/components/TextIntake";
 import { ReportView } from "@/components/Report/ReportView";
 import { PipelineProgress } from "@/components/PipelineProgress";
+import { SeesawAnimation } from "@/components/SeesawAnimation";
 import { backendUrl } from "@/lib/backend";
 import type {
   IdeaFormInput,
@@ -19,6 +20,7 @@ import type {
 
 type Step =
   | "landing"
+  | "seesaw"
   | "form"
   | "intake-choice"
   | "voice"
@@ -116,9 +118,13 @@ export default function Home() {
   function handleStart() {
     setLeavingLanding(true);
     setTimeout(() => {
-      setStep("form");
+      setStep("seesaw");
       setLeavingLanding(false);
     }, 380);
+  }
+
+  function handleSeesawDone() {
+    setStep("form");
   }
 
   function handleFormSubmit(input: IdeaFormInput) {
@@ -165,6 +171,17 @@ export default function Home() {
       <div className="flex flex-col min-h-full">
         <main className="flex-1 flex items-center justify-center p-8">
           <Landing onStart={handleStart} leaving={leavingLanding} />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (step === "seesaw") {
+    return (
+      <div className="flex flex-col min-h-full">
+        <main className="flex-1 flex items-center justify-center p-8">
+          <SeesawAnimation onDone={handleSeesawDone} />
         </main>
         <Footer />
       </div>

@@ -67,3 +67,14 @@ body {
 .animate-hero-out {
   animation: hero-out 0.4s cubic-bezier(0.4, 0, 0.6, 1) forwards;
 }
+
+@keyframes seesaw-tilt {
+  0% { transform: rotate(0deg); }
+  35% { transform: rotate(-13deg); }
+  70% { transform: rotate(11deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.seesaw-plank {
+  animation: seesaw-tilt 1.6s cubic-bezier(0.45, 0, 0.55, 1) both;
+}
