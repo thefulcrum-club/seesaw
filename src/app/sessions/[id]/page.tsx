@@ -6,6 +6,7 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { ReportView } from "@/components/Report/ReportView";
 import { backendUrl } from "@/lib/backend";
+import { getStoredEmail } from "@/lib/email";
 import type { SessionDetail } from "@/lib/types";
 
 export default function SessionDetailPage() {
@@ -15,20 +16,25 @@ export default function SessionDetailPage() {
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    fetch(backendUrl(`/sessions/${params.id}`))
+    const email = getStoredEmail();
+    if (!email) {
+      router.replace("/sessions");
+      return;
+    }
+    fetch(backendUrl(`/sessions/${params.id}?email=${encodeURIComponent(email)}`))
       .then((res) => {
         if (!res.ok) throw new Error("not found");
         return res.json();
       })
       .then((data: SessionDetail) => setSession(data))
       .catch(() => setNotFound(true));
-  }, [params.id]);
+  }, [params.id, router]);
 
   if (notFound) {
     return (
       <div className="max-w-xl mx-auto px-6 py-24 text-center space-y-4">
         <p className="font-serif italic text-xl text-muted-foreground">
-          Couldn't find that session.
+          Couldn&apos;t find that session.
         </p>
         <Link
           href="/sessions"

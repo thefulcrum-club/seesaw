@@ -4,6 +4,8 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { backendUrl } from "@/lib/backend";
+import { EmailGate } from "@/components/EmailGate";
+import { getStoredEmail } from "@/lib/email";
 import type { SessionSummary } from "@/lib/types";
 
 const VERDICT_META: Record<
@@ -18,20 +20,22 @@ const VERDICT_META: Record<
 type VerdictFilter = "all" | "green" | "amber" | "red";
 
 export default function SessionsPage() {
+  const [email, setEmail] = useState<string | null>(() => getStoredEmail());
   const [sessions, setSessions] = useState<SessionSummary[] | null>(null);
   const [error, setError] = useState(false);
   const [query, setQuery] = useState("");
   const [verdictFilter, setVerdictFilter] = useState<VerdictFilter>("all");
 
   useEffect(() => {
-    fetch(backendUrl("/sessions"))
+    if (!email) return;
+    fetch(backendUrl(`/sessions?email=${encodeURIComponent(email)}`))
       .then((res) => {
         if (!res.ok) throw new Error("failed");
         return res.json();
       })
       .then((data: SessionSummary[]) => setSessions(data))
       .catch(() => setError(true));
-  }, []);
+  }, [email]);
 
   const filtered = useMemo(() => {
     if (!sessions) return null;
@@ -70,20 +74,26 @@ export default function SessionsPage() {
         </Link>
       </div>
 
-      {sessions && sessions.length > 0 && (
+      {email === null && (
+        <EmailGate
+          onSubmit={(submitted) => setEmail(submitted)}
+        />
+      )}
+
+      {email && sessions && sessions.length > 0 && (
         <p className="animate-rise-in delay-1 font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground mb-10">
           {sessions.length} idea{sessions.length === 1 ? "" : "s"} researched ·{" "}
           {counts.green} green · {counts.amber} amber · {counts.red} red
         </p>
       )}
 
-      {error && (
+      {email && error && (
         <p className="text-rose-400 font-serif text-center py-12">
-          Couldn't load past sessions.
+          Couldn&apos;t load past sessions.
         </p>
       )}
 
-      {!error && sessions === null && (
+      {email && !error && sessions === null && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
             <div

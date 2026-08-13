@@ -12,7 +12,9 @@ import { SeesawAnimation } from "@/components/SeesawAnimation";
 import { AboutSection } from "@/components/AboutSection";
 import { PipelineStagesSection } from "@/components/PipelineStagesSection";
 import { ClosingCta } from "@/components/ClosingCta";
+import { EmailGate } from "@/components/EmailGate";
 import { backendUrl } from "@/lib/backend";
+import { getStoredEmail } from "@/lib/email";
 import type {
   IdeaFormInput,
   ResearchState,
@@ -23,6 +25,7 @@ import type {
 
 type Step =
   | "landing"
+  | "email"
   | "transition"
   | "form"
   | "intake-choice"
@@ -108,21 +111,26 @@ export default function Home() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   function handleStart() {
+    const nextStep: Step = getStoredEmail() ? "transition" : "email";
     const alreadyAtTop = window.scrollY < 4;
     if (alreadyAtTop) {
-      setStep("transition");
+      setStep(nextStep);
       return;
     }
     window.scrollTo({ top: 0, behavior: "smooth" });
     const onScrollEnd = () => {
       window.removeEventListener("scrollend", onScrollEnd);
-      setStep("transition");
+      setStep(nextStep);
     };
     if ("onscrollend" in window) {
       window.addEventListener("scrollend", onScrollEnd, { once: true });
     } else {
-      setTimeout(() => setStep("transition"), 600);
+      setTimeout(() => setStep(nextStep), 600);
     }
+  }
+
+  function handleEmailSubmitted() {
+    setStep("transition");
   }
 
   function handleTransitionDone() {
@@ -147,7 +155,7 @@ export default function Home() {
       const res = await fetch(backendUrl("/research"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ researchState: state }),
+        body: JSON.stringify({ researchState: state, email: getStoredEmail() }),
       });
       if (!res.ok) throw new Error("Pipeline request failed");
       const { sessionId, ...data } = (await res.json()) as MarketResearchReportResponse;
@@ -179,6 +187,17 @@ export default function Home() {
           <AboutSection />
           <PipelineStagesSection />
           <ClosingCta onStart={handleStart} />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (step === "email") {
+    return (
+      <div className="flex flex-col min-h-full">
+        <main className="flex-1 flex items-center justify-center p-8">
+          <EmailGate onSubmit={handleEmailSubmitted} />
         </main>
         <Footer />
       </div>
