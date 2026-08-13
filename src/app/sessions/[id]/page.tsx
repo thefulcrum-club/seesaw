@@ -13,7 +13,9 @@ export default function SessionDetailPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const [session, setSession] = useState<SessionDetail | null>(null);
-  const [notFound, setNotFound] = useState(false);
+  const [status, setStatus] = useState<"loading" | "ok" | "not-found" | "restricted">(
+    "loading"
+  );
 
   useEffect(() => {
     const email = getStoredEmail();
@@ -23,14 +25,42 @@ export default function SessionDetailPage() {
     }
     fetch(backendUrl(`/sessions/${params.id}?email=${encodeURIComponent(email)}`))
       .then((res) => {
-        if (!res.ok) throw new Error("not found");
+        if (res.status === 403) {
+          setStatus("restricted");
+          return null;
+        }
+        if (!res.ok) {
+          setStatus("not-found");
+          return null;
+        }
         return res.json();
       })
-      .then((data: SessionDetail) => setSession(data))
-      .catch(() => setNotFound(true));
+      .then((data: SessionDetail | null) => {
+        if (data) {
+          setSession(data);
+          setStatus("ok");
+        }
+      })
+      .catch(() => setStatus("not-found"));
   }, [params.id, router]);
 
-  if (notFound) {
+  if (status === "restricted") {
+    return (
+      <div className="max-w-xl mx-auto px-6 py-24 text-center space-y-4">
+        <p className="font-serif italic text-xl text-muted-foreground">
+          🔒 This research is private.
+        </p>
+        <Link
+          href="/sessions"
+          className="inline-block font-mono text-[11px] uppercase tracking-[0.18em] text-brand"
+        >
+          ← Back to past research
+        </Link>
+      </div>
+    );
+  }
+
+  if (status === "not-found") {
     return (
       <div className="max-w-xl mx-auto px-6 py-24 text-center space-y-4">
         <p className="font-serif italic text-xl text-muted-foreground">

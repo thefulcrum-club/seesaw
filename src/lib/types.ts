@@ -103,6 +103,7 @@ export type SessionSummary = {
   targetMarket: string;
   createdAt: string;
   verdict: MarketResearchReport["verdict"]["rating"] | null;
+  isPublic: boolean;
 };
 
 export type SessionDetail = {

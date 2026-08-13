@@ -191,14 +191,11 @@ function SessionCard({
   delayMs: number;
 }) {
   const meta = session.verdict ? VERDICT_META[session.verdict] : null;
+  const restricted = !session.isPublic;
 
-  return (
-    <Link
-      href={`/sessions/${session.id}`}
-      className="group relative flex flex-col justify-between rounded-3xl border border-border bg-card p-5 min-h-[168px] overflow-hidden hover:border-brand transition-colors animate-step-in"
-      style={{ animationDelay: `${delayMs}ms` }}
-    >
-      {meta && (
+  const cardBody = (
+    <>
+      {meta && !restricted && (
         <div
           className="pointer-events-none absolute -top-16 -right-16 h-40 w-40 rounded-full blur-3xl opacity-0 group-hover:opacity-20 transition-opacity duration-500"
           style={{ backgroundColor: meta.dot }}
@@ -210,7 +207,11 @@ function SessionCard({
           <p className="font-serif italic text-xl text-foreground leading-snug line-clamp-2">
             {session.ideaName}
           </p>
-          {meta ? (
+          {restricted ? (
+            <span className="shrink-0 flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
+              🔒 Private
+            </span>
+          ) : meta ? (
             <span
               className="shrink-0 flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.14em]"
               style={{ borderColor: meta.ring, color: meta.text }}
@@ -229,7 +230,7 @@ function SessionCard({
         </div>
 
         <p className="text-muted-foreground text-sm leading-relaxed mt-2 line-clamp-2">
-          {session.targetMarket}
+          {restricted ? "Details are private." : session.targetMarket}
         </p>
       </div>
 
@@ -245,6 +246,28 @@ function SessionCard({
           })}
         </span>
       </div>
+    </>
+  );
+
+  if (restricted) {
+    return (
+      <div
+        className="group relative flex flex-col justify-between rounded-3xl border border-border bg-card p-5 min-h-[168px] overflow-hidden opacity-70 cursor-not-allowed animate-step-in"
+        style={{ animationDelay: `${delayMs}ms` }}
+        title="This research is private"
+      >
+        {cardBody}
+      </div>
+    );
+  }
+
+  return (
+    <Link
+      href={`/sessions/${session.id}`}
+      className="group relative flex flex-col justify-between rounded-3xl border border-border bg-card p-5 min-h-[168px] overflow-hidden hover:border-brand transition-colors animate-step-in"
+      style={{ animationDelay: `${delayMs}ms` }}
+    >
+      {cardBody}
     </Link>
   );
 }
