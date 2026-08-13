@@ -16,6 +16,7 @@ import { ClosingCta } from "@/components/ClosingCta";
 import { EmailGate } from "@/components/EmailGate";
 import { backendUrl } from "@/lib/backend";
 import { getStoredEmail, identifyWithEmail } from "@/lib/email";
+import { captureReferralCodeFromUrl, getStoredReferralCode } from "@/lib/referral";
 import type {
   IdeaFormInput,
   ResearchState,
@@ -77,6 +78,13 @@ function Landing({ onStart }: { onStart: () => void }) {
         Simulate your idea <span>→</span>
       </button>
 
+      <Link
+        href="/sample"
+        className="animate-rise-in delay-5 mt-5 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground hover:text-brand transition-colors"
+      >
+        See a sample report →
+      </Link>
+
       <p className="animate-rise-in delay-5 mt-8 font-mono text-[10px] uppercase tracking-[0.28em] text-muted-foreground">
         by fulcrum.
       </p>
@@ -112,6 +120,7 @@ export default function Home() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    captureReferralCodeFromUrl();
     const email = getStoredEmail();
     if (email) identifyWithEmail(email);
   }, []);
@@ -168,7 +177,11 @@ export default function Home() {
       const res = await fetch(backendUrl("/research"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ researchState: state, email: getStoredEmail() }),
+        body: JSON.stringify({
+          researchState: state,
+          email: getStoredEmail(),
+          referralCode: getStoredReferralCode(),
+        }),
       });
       if (!res.ok) throw new Error("Pipeline request failed");
       const { sessionId, ...data } = (await res.json()) as MarketResearchReportResponse;

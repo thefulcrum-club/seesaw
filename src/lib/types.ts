@@ -104,6 +104,7 @@ export type SessionSummary = {
   createdAt: string;
   verdict: MarketResearchReport["verdict"]["rating"] | null;
   isPublic: boolean;
+  isShared: boolean;
 };
 
 export type SessionDetail = {
@@ -115,4 +116,20 @@ export type SessionDetail = {
   createdAt: string;
   report: MarketResearchReport;
   ideateMessages: IdeateMessage[];
+  isShared: boolean;
+};
+
+export type PublicReport = {
+  id: string;
+  ideaName: string;
+  description: string;
+  industry: string;
+  targetMarket: string;
+  createdAt: string;
+  report: MarketResearchReport;
+};
+
+export type ReferralStats = {
+  referralCode: string;
+  referralCount: number;
 };

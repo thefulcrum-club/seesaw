@@ -100,6 +100,7 @@ export default function SessionDetailPage() {
         sessionId={session.id}
         initialIdeateMessages={session.ideateMessages}
         onNewResearch={() => router.push("/")}
+        isShared={session.isShared}
       />
     </div>
   );

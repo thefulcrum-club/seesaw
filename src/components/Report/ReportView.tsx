@@ -11,6 +11,7 @@ import { CompetitorCard } from "./CompetitorCard";
 import { PmfEvidenceList } from "./PmfEvidenceList";
 import { SourcesList } from "./SourcesList";
 import { IdeateChat } from "./IdeateChat";
+import { ShareButton } from "./ShareButton";
 import { DownloadPdfButton } from "../DownloadPdfButton";
 import { fireConfetti } from "@/lib/confetti";
 
@@ -76,14 +77,19 @@ export function ReportView({
   sessionId,
   initialIdeateMessages,
   onNewResearch,
+  isShared = false,
+  readOnly = false,
 }: {
   report: MarketResearchReport;
   sessionId: string | null;
   initialIdeateMessages?: IdeateMessage[];
-  onNewResearch: () => void;
+  onNewResearch?: () => void;
+  isShared?: boolean;
+  readOnly?: boolean;
 }) {
   const [activeTab, setActiveTab] = useState<Tab>("overview");
   const firedConfetti = useRef(false);
+  const visibleTabs = readOnly ? TABS.filter((t) => t.key !== "ideate") : TABS;
 
   useEffect(() => {
     if (report.verdict.rating === "green" && !firedConfetti.current) {
@@ -95,7 +101,7 @@ export function ReportView({
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-16 pt-10 px-6">
       <div className="flex flex-wrap justify-center gap-2">
-        {TABS.map((tab) => (
+        {visibleTabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => {
@@ -121,13 +127,22 @@ export function ReportView({
         ))}
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-3">
+        {!readOnly && sessionId && (
+          <ShareButton sessionId={sessionId} initialIsShared={isShared} />
+        )}
         <DownloadPdfButton report={report} />
       </div>
 
       {activeTab === "overview" && (
         <div className="space-y-6">
           <VerdictGauge verdict={report.verdict} />
+          {report.sources.length > 0 && (
+            <p className="text-center font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+              🔎 Grounded in {report.sources.length} live source
+              {report.sources.length === 1 ? "" : "s"}
+            </p>
+          )}
 
           <Card>
             <SectionLabel>📝 Executive summary</SectionLabel>
@@ -209,14 +224,16 @@ export function ReportView({
         />
       )}
 
-      <div className="text-center">
-        <button
-          onClick={onNewResearch}
-          className="border border-border text-muted-foreground rounded-full px-6 py-2.5 font-mono text-[11px] uppercase tracking-[0.18em] hover:text-foreground hover:border-brand transition-colors"
-        >
-          🔄 New research
-        </button>
-      </div>
+      {!readOnly && onNewResearch && (
+        <div className="text-center">
+          <button
+            onClick={onNewResearch}
+            className="border border-border text-muted-foreground rounded-full px-6 py-2.5 font-mono text-[11px] uppercase tracking-[0.18em] hover:text-foreground hover:border-brand transition-colors"
+          >
+            🔄 New research
+          </button>
+        </div>
+      )}
     </div>
   );
 }

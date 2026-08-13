@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { backendUrl } from "@/lib/backend";
 import { EmailGate } from "@/components/EmailGate";
+import { ReferralCard } from "@/components/ReferralCard";
 import { getStoredEmail, identifyWithEmail } from "@/lib/email";
 import type { SessionSummary } from "@/lib/types";
 
@@ -80,6 +81,8 @@ export default function SessionsPage() {
           onSubmit={(submitted) => setEmail(submitted)}
         />
       )}
+
+      {email && <ReferralCard email={email} />}
 
       {email && sessions && sessions.length > 0 && (
         <p className="animate-rise-in delay-1 font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground mb-10">
