@@ -1,8 +1,9 @@
 // src/app/page.tsx
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import posthog from "posthog-js";
 import { IdeaForm } from "@/components/IdeaForm";
 import { VoiceIntake } from "@/components/VoiceIntake";
 import { TextIntake } from "@/components/TextIntake";
@@ -14,7 +15,7 @@ import { PipelineStagesSection } from "@/components/PipelineStagesSection";
 import { ClosingCta } from "@/components/ClosingCta";
 import { EmailGate } from "@/components/EmailGate";
 import { backendUrl } from "@/lib/backend";
-import { getStoredEmail } from "@/lib/email";
+import { getStoredEmail, identifyWithEmail } from "@/lib/email";
 import type {
   IdeaFormInput,
   ResearchState,
@@ -110,8 +111,15 @@ export default function Home() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  useEffect(() => {
+    const email = getStoredEmail();
+    if (email) identifyWithEmail(email);
+  }, []);
+
   function handleStart() {
-    const nextStep: Step = getStoredEmail() ? "transition" : "email";
+    const hasStoredEmail = Boolean(getStoredEmail());
+    posthog.capture("simulation_started", { has_stored_email: hasStoredEmail });
+    const nextStep: Step = hasStoredEmail ? "transition" : "email";
     const alreadyAtTop = window.scrollY < 4;
     if (alreadyAtTop) {
       setStep(nextStep);
@@ -138,6 +146,7 @@ export default function Home() {
   }
 
   function handleFormSubmit(input: IdeaFormInput) {
+    posthog.capture("idea_details_completed", { industry: input.industry });
     setResearchState({ form: input, voiceExchanges: [] });
     setStep("intake-choice");
   }
@@ -151,6 +160,10 @@ export default function Home() {
   }
 
   async function runPipeline(state: ResearchState) {
+    posthog.capture("research_generation_started", {
+      intake_method: step === "voice" ? "voice" : "text",
+      answer_count: state.voiceExchanges.length,
+    });
     try {
       const res = await fetch(backendUrl("/research"), {
         method: "POST",
@@ -159,10 +172,17 @@ export default function Home() {
       });
       if (!res.ok) throw new Error("Pipeline request failed");
       const { sessionId, ...data } = (await res.json()) as MarketResearchReportResponse;
+      posthog.capture("research_generation_completed", {
+        verdict_rating: data.verdict.rating,
+        answer_count: state.voiceExchanges.length,
+      });
       setReport(data);
       setSessionId(sessionId);
       setStep("report");
     } catch {
+      posthog.capture("research_generation_failed", {
+        answer_count: state.voiceExchanges.length,
+      });
       setErrorMessage("Something went wrong generating your report.");
       setStep("error");
     }
@@ -242,7 +262,10 @@ export default function Home() {
             </p>
             <div className="flex justify-center gap-4">
               <button
-                onClick={() => setStep("voice")}
+                onClick={() => {
+                  posthog.capture("intake_method_selected", { intake_method: "voice" });
+                  setStep("voice");
+                }}
                 className="rounded-full px-6 py-2.5 font-mono text-[11px] uppercase tracking-[0.18em] text-white transition-transform hover:-translate-y-0.5"
                 style={{
                   backgroundColor: "var(--brand)",
@@ -252,7 +275,10 @@ export default function Home() {
                 Voice
               </button>
               <button
-                onClick={() => setStep("text")}
+                onClick={() => {
+                  posthog.capture("intake_method_selected", { intake_method: "text" });
+                  setStep("text");
+                }}
                 className="border border-border rounded-full px-6 py-2.5 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground hover:border-brand transition-colors"
               >
                 Text

@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import posthog from "posthog-js";
 import { backendUrl } from "@/lib/backend";
 import type { ResearchState, VoiceExchange } from "@/lib/types";
 import { transcribeAudio } from "@/lib/whisperClient";
@@ -300,6 +301,10 @@ export function VoiceIntake({
           ...exchangesRef.current,
           { question, answerTranscript: text },
         ];
+        posthog.capture("intake_answer_submitted", {
+          intake_method: "voice",
+          answer_number: newExchanges.length,
+        });
         exchangesRef.current = newExchanges;
         setExchanges(newExchanges);
         await fetchNextQuestion(newExchanges);

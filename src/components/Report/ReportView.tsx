@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import posthog from "posthog-js";
 import type { MarketResearchReport, IdeateMessage } from "@/lib/types";
 import { VerdictGauge } from "./VerdictGauge";
 import { TamSamSomChart } from "./TamSamSomChart";
@@ -97,7 +98,10 @@ export function ReportView({
         {TABS.map((tab) => (
           <button
             key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
+            onClick={() => {
+              posthog.capture("report_tab_selected", { report_tab: tab.key });
+              setActiveTab(tab.key);
+            }}
             className={`px-4 py-2 rounded-full font-mono text-[11px] uppercase tracking-[0.16em] transition-colors ${
               activeTab === tab.key
                 ? "text-white"

@@ -2,7 +2,8 @@
 "use client";
 
 import { useState } from "react";
-import { isValidEmail, setStoredEmail } from "@/lib/email";
+import posthog from "posthog-js";
+import { identifyWithEmail, isValidEmail, setStoredEmail } from "@/lib/email";
 
 export function EmailGate({ onSubmit }: { onSubmit: (email: string) => void }) {
   const [email, setEmail] = useState("");
@@ -16,6 +17,8 @@ export function EmailGate({ onSubmit }: { onSubmit: (email: string) => void }) {
       return;
     }
     setStoredEmail(trimmed);
+    identifyWithEmail(trimmed);
+    posthog.capture("email_gate_completed");
     onSubmit(trimmed);
   }
 

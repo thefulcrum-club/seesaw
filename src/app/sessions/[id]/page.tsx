@@ -6,7 +6,7 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { ReportView } from "@/components/Report/ReportView";
 import { backendUrl } from "@/lib/backend";
-import { getStoredEmail } from "@/lib/email";
+import { getStoredEmail, identifyWithEmail } from "@/lib/email";
 import type { SessionDetail } from "@/lib/types";
 
 export default function SessionDetailPage() {
@@ -23,6 +23,7 @@ export default function SessionDetailPage() {
       router.replace("/sessions");
       return;
     }
+    identifyWithEmail(email);
     fetch(backendUrl(`/sessions/${params.id}?email=${encodeURIComponent(email)}`))
       .then((res) => {
         if (res.status === 403) {

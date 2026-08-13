@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import posthog from "posthog-js";
 import { backendUrl } from "@/lib/backend";
 import type { MarketResearchReport, IdeateMessage } from "@/lib/types";
 
@@ -34,6 +35,9 @@ export function IdeateChat({
     if (!trimmed || loading) return;
 
     const nextMessages: IdeateMessage[] = [...messages, { role: "user", content: trimmed }];
+    posthog.capture("ideation_message_sent", {
+      message_source: STARTER_PROMPTS.includes(text) ? "starter_prompt" : "custom",
+    });
     setMessages(nextMessages);
     setInput("");
     setLoading(true);
@@ -64,7 +68,7 @@ export function IdeateChat({
           💡 Ideate further
         </p>
         <p className="text-sm text-muted-foreground mt-1">
-          Push on the report — propose a pivot, poke a weakness, ask "what if."
+          Push on the report — propose a pivot, poke a weakness, ask &quot;what if.&quot;
         </p>
       </div>
 

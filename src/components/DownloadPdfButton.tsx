@@ -2,6 +2,7 @@
 "use client";
 
 import { useState } from "react";
+import posthog from "posthog-js";
 import {
   Document,
   Page,
@@ -354,6 +355,9 @@ export function DownloadPdfButton({ report }: { report: MarketResearchReport }) 
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+      posthog.capture("report_pdf_downloaded", {
+        verdict_rating: report.verdict.rating,
+      });
       setStatus("idle");
     } catch (error) {
       console.error("PDF generation failed:", error);

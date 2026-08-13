@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import posthog from "posthog-js";
 import { backendUrl } from "@/lib/backend";
 import type { ResearchState, VoiceExchange } from "@/lib/types";
 
@@ -63,6 +64,10 @@ export function TextIntake({
       ...exchanges,
       { question: currentQuestion, answerTranscript: answer.trim() },
     ];
+    posthog.capture("intake_answer_submitted", {
+      intake_method: "text",
+      answer_number: newExchanges.length,
+    });
     setExchanges(newExchanges);
     await fetchNextQuestion(newExchanges);
   }

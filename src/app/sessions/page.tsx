@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { backendUrl } from "@/lib/backend";
 import { EmailGate } from "@/components/EmailGate";
-import { getStoredEmail } from "@/lib/email";
+import { getStoredEmail, identifyWithEmail } from "@/lib/email";
 import type { SessionSummary } from "@/lib/types";
 
 const VERDICT_META: Record<
@@ -28,6 +28,7 @@ export default function SessionsPage() {
 
   useEffect(() => {
     if (!email) return;
+    identifyWithEmail(email);
     fetch(backendUrl(`/sessions?email=${encodeURIComponent(email)}`))
       .then((res) => {
         if (!res.ok) throw new Error("failed");
